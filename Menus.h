@@ -13,31 +13,25 @@
 #include "UART.h"
 #include "Configurations.h"
 
-typedef void(*fptrMenu)(DataIO_Type data);
+uint8 menu_Main(void);
 
+void menu_ReadI2C(DataIO_Type*);
 
+void menu_WriteI2C(DataIO_Type*);
 
-void menu_Main(DataIO_Type data);
+void menu_SetHour(DataIO_Type*);
 
-void menu_ReadI2C(DataIO_Type data);
+void menu_SetDate(DataIO_Type*);
 
-void menu_WriteI2C(DataIO_Type data);
+void menu_FormatHour(DataIO_Type*);
 
-void menu_SetHour(DataIO_Type data);
+void menu_ReadHour(DataIO_Type*);
 
-void menu_SetDate(DataIO_Type data);
+void menu_ReadDate(DataIO_Type*);
 
-void menu_FormatHour(DataIO_Type data);
+void menu_CommTerminal2(DataIO_Type*);
 
-void menu_ReadHour(DataIO_Type data);
-
-void menu_ReadDate(DataIO_Type data);
-
-void menu_CommTerminal2(DataIO_Type data);
-
-void menu_Read(DataIO_Type data);
-
-void menu_EcoLCD(DataIO_Type data);
+void menu_EcoLCD(DataIO_Type*);
 
 
 

@@ -80,6 +80,23 @@ const SPI_ConfigType SPI_Config={
 							SPI_FSIZE_8,		/**Size of frame**/
 							{GPIO_D,BIT1,BIT2}};/**GPIO for SPI**/
 
+
+/**Simple machine state only change the tag**/
+const StateType StateProgram[10] =
+{
+		{stateMenu},
+		{stateRead},
+		{stateWrite},
+		{stateSetHour},
+		{stateSetDate},
+		{stateFormat},
+		{stateReadHour},
+		{stateReadDate},
+		{stateTerminal2},
+		{stateEco}
+};
+
+
 int main(void){
 
 	/**Configuration to enable the clock in 60 MHz**/
@@ -89,7 +106,7 @@ int main(void){
 
 	/**First state in the program**/
   	States_MenuType currentState = MENU;
-	States_MenuType(*mainFunctions)(uint32);
+	States_MenuType(*mainFunctions)(void);
 
 	/**Configurations of devices**/
 	SPI_init(&SPI_Config);
@@ -116,6 +133,7 @@ int main(void){
 	/**Enables the UART 0 interrupt*/
 	UART0_interruptEnable(UART_0);
 	/**Enable all the interrupts **/
+
 
 	EnableInterrupts;
     while(1){

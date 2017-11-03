@@ -13,7 +13,6 @@
 #include "Buttons.h"
 #include "SPI.h"
 #include "GPIO.h"
-#include "Menus.h"
 #include "UART.h"
 
 /*Data type to States of the program*/
@@ -53,7 +52,8 @@ typedef struct{
 }Date_Type;
 
 typedef struct{
-	uint32	address;
+	uint32	addressWrite;
+	uint32	adressRead;
 	uint32	lenght;
 	uint8	dataIn[30];
 	uint8	dataOut[30];
@@ -62,6 +62,18 @@ typedef struct{
 	FORMAT_HOUR	formatHour;
 	uint8	error : 1;
 }DataIO_Type;
+
+States_MenuType stateMenu();
+States_MenuType stateRead();
+States_MenuType stateWrite();
+States_MenuType stateSetHour();
+States_MenuType stateSetDate();
+States_MenuType stateFormat();
+States_MenuType stateReadHour();
+States_MenuType stateReadDate();
+States_MenuType stateTerminal2();
+States_MenuType stateEco();
+
 
 
 #endif /* CONFIGURATIONS_H_ */
