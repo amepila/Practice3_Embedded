@@ -11,7 +11,8 @@
 /*Global variable that saves the info*/
 UART_MailBoxType UART0_MailBox;
 
-/*Table of BRFD. Range 0:32 */
+
+/*Table of BRFD. Range 0:31 */
 const float BRFD_Type[32] = {
 		(0),	(0.03125),	(0.0625),	(0.09375),	(0.125),	(0.15625),	(0.1875),	(0.21875),
 		(0.25), (0.28125),	(0.3125),	(0.34375),	(0.375),	(0.40625),	(0.4375),	(0.46875),
@@ -138,9 +139,6 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 		}
 	}
 
-	/*Assigns the indicated BRFA*/
-	//BRFA = 0x0C;
-
 	/*Considers only the integer part*/
 	sbr_TEMP = (uint32)sBR;
 	/*Saves the High part of Baud Rate*/
@@ -174,6 +172,8 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 	/*Enable Tx of UART*/
 	UART0->C2 |= (UART_C2_TE_MASK);
 
+
+	clearUART0_mailbox();
 }
 
 void UART0_interruptEnable(UART_ChannelType uartChannel){
@@ -207,4 +207,19 @@ void UART_putString(UART_ChannelType uartChannel, sint8* string){
 			delay(S);
 		}
 	}
+}
+
+uint8 clearUART0_mailbox(){
+	UART0_MailBox.flag = FALSE;
+	UART0_MailBox.mailBox = 0;
+	return TRUE;
+}
+
+uint32 Convert_ASCIItoDATA(sint8 *wordASCII){
+
+
+}
+
+void Convert_DATAtoASCII(){
+
 }

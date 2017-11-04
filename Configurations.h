@@ -53,15 +53,18 @@ typedef struct{
 
 typedef struct{
 	uint32	addressWrite;
-	uint32	adressRead;
+	uint32	addressRead;
 	uint32	lenght;
-	uint8	dataIn[30];
-	uint8	dataOut[30];
+	sint8	*dataIn;
+	sint8	*dataOut;
 	Hour_Type Hour;
 	Date_Type Date;
 	FORMAT_HOUR	formatHour;
 	uint8	error : 1;
 }DataIO_Type;
+
+
+
 
 States_MenuType stateMenu();
 States_MenuType stateRead();

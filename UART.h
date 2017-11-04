@@ -106,6 +106,7 @@ uint8 getUART0_mailBox();
 uint8 getUART0_flag();
 void setUART0_mailBox(uint8 character);
 void setUART0_flag(uint8 status);
+uint8 clearUART0_mailbox();
 
 #endif /* UART_H_ */
 

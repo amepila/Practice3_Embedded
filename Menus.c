@@ -9,8 +9,6 @@
 
 uint8 menu_Main(void){
 
-	uint8 flagUART0 = TRUE;
-
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -40,44 +38,65 @@ uint8 menu_Main(void){
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[20;10H");
 
-	return flagUART0;
+	return TRUE;
 }
 
-void menu_ReadI2C(DataIO_Type* data){
-
+uint8 menu_ReadI2C(uint32 address, uint32 lenght, sint8 *data, uint8 phase){
+/*
+	static uint32 addressToWrite = address;
+	static uint32 lenghtByte = lenght;
+	static sint8* dataToWrite = data;
+*/
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
-	/*VT100 command for clearing the screen*/
-	UART_putString(UART_0,"\033[2J");
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[10;10H");
-	UART_putString(UART_0, "Direccion de la lectura:\t");
-	//UART_putString(UART_0, &data.addressRead);
-	UART_putString(UART_0,"\r");
+	if(phase == 0){
+		/*VT100 command for clearing the screen*/
+		UART_putString(UART_0,"\033[2J");
+		/** VT100 command for positioning the cursor in x and y position*/
+		UART_putString(UART_0,"\033[10;10H");
+		UART_putString(UART_0, "Direccion de la lectura:\t");
 
-	UART_putString(UART_0,"\033[11;10H");
-	UART_putString(UART_0, "Longitud en bytes: \t");
-	//UART_putString(UART_0, &data.lenght);
-	UART_putString(UART_0,"\r");
+		return FALSE;
+	}
 
-	UART_putString(UART_0,"\033[12;10H");
-	UART_putString(UART_0, "Contenido: \r");
-	UART_putString(UART_0,"\033[13;10H");
-	//UART_putString(UART_0, &data.dataOut);
-	UART_putString(UART_0,"\r");
+	if(phase == 1){
+		UART_putString(UART_0,"\033[11;10H");
+		UART_putString(UART_0, "Longitud en bytes: \t");
+		//UART_putString(UART_0, &data.lenght);
+		UART_putString(UART_0,"\r");
 
-	UART_putString(UART_0,"\033[14;10H");
-	UART_putString(UART_0, "Presione una tecla para continuar....\r");
-	//UART_putString(UART_0, &data.);
-	UART_putString(UART_0,"\r");
+		return FALSE;
+	}
 
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[15;10H");
+	if(phase == 2){
+		UART_putString(UART_0,"\033[12;10H");
+		UART_putString(UART_0, "Contenido: \r");
+		UART_putString(UART_0,"\033[13;10H");
+		//UART_putString(UART_0, &data.dataOut);
+		UART_putString(UART_0,"\r");
+
+		return FALSE;
+	}
+
+
+	if(phase == 3){
+		UART_putString(UART_0,"\033[14;10H");
+		UART_putString(UART_0, "Presione una tecla para continuar....\r");
+		//UART_putString(UART_0, &data.);
+		UART_putString(UART_0,"\r");
+		/** VT100 command for positioning the cursor in x and y position*/
+		UART_putString(UART_0,"\033[15;10H");
+
+		return FALSE;
+	}
+
+	if(phase == 4){return TRUE;}
 }
 
 
-void menu_WriteI2C(DataIO_Type* data){
+uint8 menu_WriteI2C(DataIO_Type* data){
+
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -101,9 +120,12 @@ void menu_WriteI2C(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[20;10H");
+
+	return TRUE;
 }
 
-void menu_SetHour(DataIO_Type* data){
+uint8 menu_SetHour(DataIO_Type* data){
+
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -122,9 +144,11 @@ void menu_SetHour(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[20;10H");
+
+	return TRUE;
 }
 
-void menu_SetDate(DataIO_Type* data){
+uint8 menu_SetDate(DataIO_Type* data){
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -143,9 +167,11 @@ void menu_SetDate(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[20;10H");
+
+	return TRUE;
 }
 
-void menu_FormatHour(DataIO_Type* data){
+uint8 menu_FormatHour(DataIO_Type* data){
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -171,9 +197,11 @@ void menu_FormatHour(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[20;10H");
+
+	return TRUE;
 }
 
-void menu_ReadHour(DataIO_Type* data){
+uint8 menu_ReadHour(DataIO_Type* data){
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -189,9 +217,11 @@ void menu_ReadHour(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[12;10H");
+
+	return TRUE;
 }
 
-void menu_ReadDate(DataIO_Type* data){
+uint8 menu_ReadDate(DataIO_Type* data){
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -207,9 +237,11 @@ void menu_ReadDate(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[12;10H");
+
+	return TRUE;
 }
 
-void menu_CommTerminal2(DataIO_Type* data){
+uint8 menu_CommTerminal2(DataIO_Type* data){
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -232,11 +264,15 @@ void menu_CommTerminal2(DataIO_Type* data){
 
 	/** VT100 command for positioning the cursor in x and y position*/
 	UART_putString(UART_0,"\033[13;10H");
+
+	return TRUE;
 }
 
 
-void menu_EcoLCD(DataIO_Type* data){
+uint8 menu_EcoLCD(DataIO_Type* data){
 
+
+	return TRUE;
 }
 
 

@@ -15,23 +15,23 @@
 
 uint8 menu_Main(void);
 
-void menu_ReadI2C(DataIO_Type*);
+uint8 menu_ReadI2C(uint32 address, uint32 length, sint8 *data, uint8 counter);
 
-void menu_WriteI2C(DataIO_Type*);
+uint8 menu_WriteI2C(DataIO_Type*);
 
-void menu_SetHour(DataIO_Type*);
+uint8 menu_SetHour(DataIO_Type*);
 
-void menu_SetDate(DataIO_Type*);
+uint8 menu_SetDate(DataIO_Type*);
 
-void menu_FormatHour(DataIO_Type*);
+uint8 menu_FormatHour(DataIO_Type*);
 
-void menu_ReadHour(DataIO_Type*);
+uint8 menu_ReadHour(DataIO_Type*);
 
-void menu_ReadDate(DataIO_Type*);
+uint8 menu_ReadDate(DataIO_Type*);
 
-void menu_CommTerminal2(DataIO_Type*);
+uint8 menu_CommTerminal2(DataIO_Type*);
 
-void menu_EcoLCD(DataIO_Type*);
+uint8 menu_EcoLCD(DataIO_Type*);
 
 
 
