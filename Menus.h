@@ -13,9 +13,18 @@
 #include "UART.h"
 #include "Configurations.h"
 
+
+typedef struct{
+	uint8 flag1 : 1;
+	uint8 flag2 : 1;
+	uint8 flag3 : 1;
+	uint8 flag4 : 1;
+	uint8 flag5 : 1;
+}Flags_Type;
+
 uint8 menu_Main(void);
 
-uint8 menu_ReadI2C(uint32 address, uint32 length, sint8 *data, uint8 counter);
+uint8 menu_ReadI2C(uint8 phase);
 
 uint8 menu_WriteI2C(DataIO_Type*);
 

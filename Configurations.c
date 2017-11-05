@@ -77,16 +77,7 @@ States_MenuType stateRead(){
 	uint8 inputAddress[5];
 	uint8 inputLenght[4];
 
-
-	data.addressRead = 0;
-	data.lenght = 0;
-	data.dataOut = 0;
-	data.error = FALSE;
-
-	if(FALSE == flagUART0){
-
-		flagUART0 = menu_ReadI2C(data.addressRead, data.lenght, data.dataOut, phaseState);
-	}
+	if(FALSE == flagUART0){flagUART0 = menu_ReadI2C(phaseState);}
 
 	if(getUART0_flag()){
 		if(phaseState == 0){
@@ -124,14 +115,26 @@ States_MenuType stateRead(){
 			}
 		}
 
-		if(phaseState == 2){
-			//Function to extract from memory
-			data.dataOut = "DSPs";
-
+		if(phaseState == 3){
 			state = MENU;
 		}
+
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
+	}
+
+	if(phaseState == 2){
+
+		/**IMPORTANT PART**/
+		//Function to extract from memory
+		//Print the data
+		//Put the function to allocate with address and lenght
+		//data.AddressRead and data.lenght
+		//Function to decode the data
+		data.dataOut = "DSPs";
+		UART_putString(UART_0, data.dataOut);
+
+		phaseState = 3;
 	}
 
 	return state;

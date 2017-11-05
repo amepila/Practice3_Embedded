@@ -41,57 +41,59 @@ uint8 menu_Main(void){
 	return TRUE;
 }
 
-uint8 menu_ReadI2C(uint32 address, uint32 lenght, sint8 *data, uint8 phase){
-/*
-	static uint32 addressToWrite = address;
-	static uint32 lenghtByte = lenght;
-	static sint8* dataToWrite = data;
-*/
+uint8 menu_ReadI2C(uint8 phase){
+
+	static Flags_Type flagContinue;
+
+	flagContinue.flag1 = FALSE;
+	flagContinue.flag2 = FALSE;
+	flagContinue.flag3 = FALSE;
+
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
 	if(phase == 0){
-		/*VT100 command for clearing the screen*/
-		UART_putString(UART_0,"\033[2J");
-		/** VT100 command for positioning the cursor in x and y position*/
-		UART_putString(UART_0,"\033[10;10H");
-		UART_putString(UART_0, "Direccion de la lectura:\t");
+		if(flagContinue.flag1 == FALSE){
+			/*VT100 command for clearing the screen*/
+			UART_putString(UART_0,"\033[2J");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[10;10H");
+			UART_putString(UART_0, "Direccion de la lectura:\t");
 
-		return FALSE;
+			flagContinue.flag1 = TRUE;
+		}
+		return TRUE;
 	}
 
 	if(phase == 1){
-		UART_putString(UART_0,"\033[11;10H");
-		UART_putString(UART_0, "Longitud en bytes: \t");
-		//UART_putString(UART_0, &data.lenght);
-		UART_putString(UART_0,"\r");
+		if(flagContinue.flag2 == FALSE){
+			UART_putString(UART_0,"\033[11;10H");
+			UART_putString(UART_0, "Longitud en bytes: \t");
 
-		return FALSE;
+			flagContinue.flag2 = TRUE;
+		}
+		return TRUE;
 	}
 
 	if(phase == 2){
-		UART_putString(UART_0,"\033[12;10H");
-		UART_putString(UART_0, "Contenido: \r");
-		UART_putString(UART_0,"\033[13;10H");
-		//UART_putString(UART_0, &data.dataOut);
-		UART_putString(UART_0,"\r");
+		if(flagContinue.flag3 == FALSE){
+			UART_putString(UART_0,"\033[12;10H");
+			UART_putString(UART_0, "Contenido: \r");
+			UART_putString(UART_0,"\033[13;10H");
 
-		return FALSE;
+			flagContinue.flag3 = TRUE;
+		}
+		return TRUE;
 	}
 
 
 	if(phase == 3){
-		UART_putString(UART_0,"\033[14;10H");
-		UART_putString(UART_0, "Presione una tecla para continuar....\r");
-		//UART_putString(UART_0, &data.);
-		UART_putString(UART_0,"\r");
-		/** VT100 command for positioning the cursor in x and y position*/
-		UART_putString(UART_0,"\033[15;10H");
-
-		return FALSE;
+		if(flagContinue.flag3 == FALSE){
+			UART_putString(UART_0,"\033[16;10H");
+			UART_putString(UART_0, "Presione una tecla para continuar....\r");
+		}
+		return TRUE;
 	}
-
-	if(phase == 4){return TRUE;}
 }
 
 
