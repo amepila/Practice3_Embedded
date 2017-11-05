@@ -63,21 +63,24 @@ States_MenuType stateMenu(){
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
+
 	return (state);
 }
 
 States_MenuType stateRead(){
 
 	States_MenuType state = READ;
-	DataIO_Type data;
+	static DataIO_Type data;
 	static uint8 flagUART0 = FALSE;
-	static phaseState = 0;
-	uint8 optionMenu[6];
+	static uint8 phaseState = 0;
+	static uint8 counter = 0;
+	uint8 inputAddress[5];
+	uint8 inputLenght[4];
 
 
 	data.addressRead = 0;
 	data.lenght = 0;
-	data.dataOut = "DSPs";
+	data.dataOut = 0;
 	data.error = FALSE;
 
 	if(FALSE == flagUART0){
@@ -86,22 +89,47 @@ States_MenuType stateRead(){
 	}
 
 	if(getUART0_flag()){
-
 		if(phaseState == 0){
-			/**Sends to the PCA the received data in the mailbox*/
-			UART_putChar(UART_0, getUART0_mailBox());
-			optionMenu[phaseState] = getUART0_mailBox();
-/*
-			if((optionMenu[0] == ){
+			if(getUART0_mailBox() != CR){
+				/**Sends to the PCA the received data in the mailbox*/
+				UART_putChar(UART_0, getUART0_mailBox());
+			}
+			if((counter > 1) && (counter < 8)){
+				inputAddress[counter] = getUART0_mailBox();
+			}
+			counter++;
 
-			}*/
+			if(getUART0_mailBox() == CR){
+				data.addressRead = *inputAddress;
 
+				phaseState = 1;
+				counter = 0;
+			}
 		}
 
-		phaseState++;
-		if(phaseState > 1){phaseState = 0;}
+		if(phaseState == 1){
+			if(getUART0_mailBox() != CR){
+				/**Sends to the PCA the received data in the mailbox*/
+				UART_putChar(UART_0, getUART0_mailBox());
+			}
 
-		state =  MENU;
+			inputLenght[counter] = getUART0_mailBox();
+			counter++;
+
+			if(getUART0_mailBox() == CR){
+				data.lenght = *inputLenght;
+
+				phaseState = 2;
+				counter = 0;
+			}
+		}
+
+		if(phaseState == 2){
+			//Function to extract from memory
+			data.dataOut = "DSPs";
+
+			state = MENU;
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}

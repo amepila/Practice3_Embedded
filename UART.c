@@ -153,6 +153,8 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 	UART0->C2 &= ~(UART_C2_RE_MASK);
 	/*Disable the Tx of UART*/
 	UART0->C2 &= ~(UART_C2_TE_MASK);
+	/*Default settings*/
+	UART0->C1 = 0;
 
 
 	/*Clear the High part of SBR*/
@@ -172,7 +174,6 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 	/*Enable Tx of UART*/
 	UART0->C2 |= (UART_C2_TE_MASK);
 
-
 	clearUART0_mailbox();
 }
 
@@ -186,7 +187,7 @@ void UART0_interruptEnable(UART_ChannelType uartChannel){
 
 void UART_putChar (UART_ChannelType uartChannel, uint8 character){
 	/*Check if there isn't data transmission*/
-	if((UART0->S1 & UART_S1_TC_MASK)){
+	if((UART0->S1 & UART_S1_TDRE_MASK)){
 		/*Send character to Data Register*/
 		UART0->D |= character;
 		delay(S);
@@ -197,7 +198,7 @@ void UART_putString(UART_ChannelType uartChannel, sint8* string){
 	/*Counter that verifies each position of the array*/
 	uint8 counter = 0;
 	/*Check if there isn't data transmission*/
-	if((UART0->S1 & UART_S1_TC_MASK)){
+	if((UART0->S1 & UART_S1_TDRE_MASK)){
 		/*Transmit the data until find the NULL value*/
 		while(string[counter] != '\0'){
 			/*Each character of string is send to Data Register*/
@@ -215,11 +216,60 @@ uint8 clearUART0_mailbox(){
 	return TRUE;
 }
 
-uint32 Convert_ASCIItoDATA(sint8 *wordASCII){
+uint32 expBASE10(uint8 limit){
 
+	static uint32 value = 10;
+	uint8 counter;
 
+	for(counter = 0; counter < (limit-1); counter++){
+		value *= 10;
+	}
+	return value;
 }
 
-void Convert_DATAtoASCII(){
+uint32 Convert_numberASCIItoDATA(uint8 *string){
 
+	const uint32 adjustASCII = 48;
+	const uint32 CR = 13;
+	uint8 counter1 = 0;
+	uint8 counter2 = 0;
+	uint8 counter3 = 0;
+	uint32 data;
+	uint32 tmpData1 = 0;
+	uint32 tmpData2 = 0;
+	uint32 expValue;
+
+	while(string[counter1] != CR){
+		counter1++;
+	}
+
+	for(counter2 = counter1; counter2 != 0; counter2--){
+
+		expValue = expBASE10(counter3);
+
+		if(counter3 == 0){
+			tmpData2 = string[counter2 - 1];
+			tmpData2 -= adjustASCII;
+			tmpData1 += tmpData2;
+		}
+
+		if(counter3 > 0){
+			tmpData2 = string[counter2 - 1];
+			tmpData2 -= adjustASCII;
+			tmpData2 *= expValue;
+			tmpData1 += tmpData2;
+		}
+
+		counter3++;
+	}
+
+	data = tmpData1;
+	return (data);
 }
+
+uint8 Convert_wordASCIItoDATA(uint8 word){
+	uint8 valueWord = (uint8)word;
+	return (valueWord);
+}
+
+
