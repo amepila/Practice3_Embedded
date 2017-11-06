@@ -114,10 +114,7 @@ int main(void){
 	LCDNokia_clear();
 	Buttons_init(Buttons_Config);
 
-	/*********************************/
-	/***INTERRUPTIONS CONFIGURATION***/
-	/*********************************/
-
+	/***Interruptions Configurations***/
 	/**Set the reference priority **/
 	NVIC_setBASEPRI_threshold(PRIORITY_10);
 
@@ -133,11 +130,9 @@ int main(void){
 	/**Enables the UART 0 interrupt*/
 	UART0_interruptEnable(UART_0);
 	/**Enable all the interrupts **/
-
-
 	EnableInterrupts;
-    while(1){
 
+    while(1){
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;
     	currentState = mainFunctions();

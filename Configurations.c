@@ -31,23 +31,136 @@ typedef enum{
 }ASCII_code;
 
 const uint8 CR = 13;
+/******************States********************************************/
+/********************************************************************/
+const StatePtrRead_Type statesReadI2C[4] =
+{
+		{stateAddressRead},
+		{stateLenght},
+		{stateData},
+		{stateFinal}
+};
+
+const StatePtrWrite_Type statesWriteI2C[3] =
+{
+		{stateAddressWrite},
+		{stateDataWrite},
+		{stateFinalWrite}
+};
+
+/********************************************************************/
+/********************************************************************/
+StateReadI2C_Type stateAddressRead(){
+
+	static uint32 counter1 = 0;
+	static StateReadI2C_Type dataState1;
+
+	if(getUART0_mailBox() != CR){
+		/**Sends to the PCA the received data in the mailbox*/
+		UART_putChar(UART_0, getUART0_mailBox());
+	}
+	if((counter1 > 1) && (counter1 < 8)){
+		dataState1.inputAddress[counter1-2] = getUART0_mailBox();
+	}
+	counter1++;
+
+	if(getUART0_mailBox() == CR){
+
+		dataState1.realAddress = Convert_numberASCIItoDATA(dataState1.inputAddress);
+
+		dataState1.phaseState = 1;
+		counter1 = 0;
+		clearUART0_mailbox();
+	}
+	dataState1.stateMain = READ;
+	return (dataState1);
+}
+StateReadI2C_Type stateLenght(){
+
+	static uint32 counter2 = 0;
+	static StateReadI2C_Type dataState2;
+
+	if(getUART0_mailBox() != CR){
+		/**Sends to the PCA the received data in the mailbox*/
+		UART_putChar(UART_0, getUART0_mailBox());
+	}
+
+	dataState2.inputLenght[counter2] = getUART0_mailBox();
+	counter2++;
+
+	if(getUART0_mailBox() == CR){
+
+		dataState2.realLenght = Convert_numberASCIItoDATA(dataState2.inputLenght);
+
+		dataState2.phaseState = 2;
+		counter2 = 0;
+		clearUART0_mailbox();
+	}
+	dataState2.stateMain = READ;
+	return (dataState2);
+}
+
+StateReadI2C_Type stateData(){
+
+	static StateReadI2C_Type dataState3;
+	//uint8 data[5] = {'h', 'o', 'l', 'a'};
+
+	/**IMPORTANT PART**/
+	//Function to extract from memory
+	//Print the data
+	//Put the function to allocate with address and lenght
+	//data.AddressRead and data.lenght
+	//Function to decode the data
+
+	//UART_putString(UART_0, &data);
+
+	dataState3.phaseState = 3;
+	dataState3.stateMain = READ;
+
+	return (dataState3);
+
+}
+StateReadI2C_Type stateFinal(){
+	static StateReadI2C_Type dataState4;
+
+	clearUART0_mailbox();
+	dataState4.stateMain = MENU;
+
+	return (dataState4);
+}
+
+/*************************************************************/
+StateWriteI2C_Type stateAddressWrite(){
+	/**Sends to the PCA the received data in the mailbox*/
+	UART_putChar(UART_0, getUART0_mailBox());
+}
+
+StateWriteI2C_Type stateDataWrite(){
+	/**Sends to the PCA the received data in the mailbox*/
+	UART_putChar(UART_0, getUART0_mailBox());
+
+}
+
+StateWriteI2C_Type stateFinalWrite(){
+
+}
 
 
-
-
+/********************************************************/
+/********************************************************/
 States_MenuType stateMenu(){
 
 	States_MenuType state = MENU;
-	static uint8 flagUART0 = FALSE;
+	static uint32 flagUART0 = FALSE;
+	static uint32 counter = 0;
 	uint8 optionMenu[2];
-	static uint8 counter = 0;
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
 	if(getUART0_flag()){
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, getUART0_mailBox());
-
+		/**Saves the input data in an array of 2 spaces**/
 		optionMenu[counter] = getUART0_mailBox();
 
 		if((optionMenu[0] == ASCII_1) && (optionMenu[1] == CR)){state = READ;}
@@ -66,105 +179,62 @@ States_MenuType stateMenu(){
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
 	return (state);
 }
 
 States_MenuType stateRead(){
 
-	States_MenuType state = READ;
-	static DataIO_Type data;
-	static uint8 flagUART0 = FALSE;
-	static uint8 phase = 0;
-	static uint8 counter = 0;
-	uint8 inputAddress[5];
-	uint8 inputLenght[4];
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateReadI2C_Type stateRead;
+	StateReadI2C_Type(*readFunctions)(void);
+	stateRead.stateMain = READ;
 
-
-	if(FALSE == flagUART0){flagUART0 = menu_ReadI2C(phase);}
+	if(FALSE == flagUART0){
+		flagUART0 = menu_ReadI2C(phase);
+	}
 
 	if(phase == 2){
-		/**IMPORTANT PART**/
-		//Function to extract from memory
-		//Print the data
-		//Put the function to allocate with address and lenght
-		//data.AddressRead and data.lenght
-		//Function to decode the data
-		data.dataOut = "Test";
-		UART_putString(UART_0, data.dataOut);
-
-		phase = 3;
+		readFunctions = statesReadI2C[phase].StateReadI2C;
+		stateRead = readFunctions();
 	}
 
 	if(getUART0_flag()){
+		readFunctions = statesReadI2C[phase].StateReadI2C;
+		stateRead = readFunctions();
 
-		switch(phase){
-		case 0:
-			if(getUART0_mailBox() != CR){
-				/**Sends to the PCA the received data in the mailbox*/
-				UART_putChar(UART_0, getUART0_mailBox());
-			}
-			if((counter > 1) && (counter < 8)){
-				inputAddress[counter-2] = getUART0_mailBox();
-			}
-			counter++;
-
-			if(getUART0_mailBox() == CR){
-
-				data.addressRead = Convert_numberASCIItoDATA(inputAddress);
-
-				phase = 1;
-				counter = 0;
-				clearUART0_mailbox();
-			}
-			break;
-		case 1:
-			if(getUART0_mailBox() != CR){
-				/**Sends to the PCA the received data in the mailbox*/
-				UART_putChar(UART_0, getUART0_mailBox());
-			}
-
-			inputLenght[counter] = getUART0_mailBox();
-			counter++;
-
-			if(getUART0_mailBox() == CR){
-
-				data.lenght = Convert_numberASCIItoDATA(inputLenght);
-
-				phase = 2;
-				counter = 0;
-				clearUART0_mailbox();
-			}
-			break;
-		case 2:
-			/**Nothing occurs in because the message is displayed**/
-			break;
-		case 3:
-			clearUART0_mailbox();
-			state = MENU;
-			break;
-		default:
-			break;
-		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-	return state;
+
+	phase = stateRead.phaseState;
+
+	return (stateRead.stateMain);
 }
 
 States_MenuType stateWrite(){
 
-	States_MenuType state = WRITE;
+	static uint32 phase = 0;
+	static flagUART0 = FALSE;
+	static StateWriteI2C_Type stateWrite;
+	StateWriteI2C_Type(*writeFunctions)(void);
+	stateWrite.stateMain = WRITE;
+
+	if(FALSE == flagUART0){
+		flagUART0 = menu_WriteI2C(phase);
+	}
 
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		writeFunctions = statesWriteI2C[phase].StateWriteI2C;
+		stateWrite = writeFunctions();
 
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
 
-	return state;
+	phase = stateWrite.phaseState;
+
+	return (stateWrite.stateMain);
 }
 
 States_MenuType stateSetHour(){

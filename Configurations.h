@@ -40,15 +40,15 @@ typedef const struct State{
 typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
 
 typedef struct{
-	uint8	hour;
-	uint8	minutes;
-	uint8	seconds;
+	uint32	hour;
+	uint32	minutes;
+	uint32	seconds;
 }Hour_Type;
 
 typedef struct{
-	uint8	year;
-	uint8	month;
-	uint8	day;
+	uint32	year;
+	uint32	month;
+	uint32	day;
 }Date_Type;
 
 typedef struct{
@@ -60,18 +60,44 @@ typedef struct{
 	Hour_Type Hour;
 	Date_Type Date;
 	FORMAT_HOUR	formatHour;
-	uint8	error : 1;
+	uint32	errorFlag : 1;
 }DataIO_Type;
 
+////////////////////////////////////////////////////
 typedef struct{
-	uint8 counter;
-	uint8 input[10];
-	uint8 state;
+	uint8 inputAddress[5];
+	uint8 inputLenght[4];
+	uint32 phaseState;
+	States_MenuType stateMain;
+	uint32 realAddress;
+	uint32 realLenght;
 }StateReadI2C_Type;
 
+typedef StateReadI2C_Type(*fptrStateReadI2C)(void);
 
+typedef const struct StateReadI2C{
+	StateReadI2C_Type(*StateReadI2C)(void);
+}StatePtrRead_Type;
+/////////////////////////////////////////////////////
+typedef struct{
+	uint8 inputAddress[5];
+	uint8 inputData[30];
+	uint32 phaseState;
+	States_MenuType stateMain;
+	uint32 realAddress;
+}StateWriteI2C_Type;
 
+typedef StateWriteI2C_Type(*fptrStateWriteI2C)(void);
 
+typedef const struct StateWriteI2C{
+	StateWriteI2C_Type(*StateWriteI2C)(void);
+}StatePtrWrite_Type;
+/////////////////////////////////////////////////////
+
+StateReadI2C_Type stateAddress();
+StateReadI2C_Type stateLenght();
+StateReadI2C_Type stateData();
+StateReadI2C_Type stateFinal();
 
 
 States_MenuType stateMenu();

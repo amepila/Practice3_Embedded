@@ -26,21 +26,21 @@ uint8 menu_Main(void);
 
 uint8 menu_ReadI2C(uint8 phase);
 
-uint8 menu_WriteI2C(DataIO_Type*);
+uint8 menu_WriteI2C(uint8 phase);
 
-uint8 menu_SetHour(DataIO_Type*);
+uint8 menu_SetHour(uin8 phase);
 
-uint8 menu_SetDate(DataIO_Type*);
+uint8 menu_SetDate(uint8 phase);
 
-uint8 menu_FormatHour(DataIO_Type*);
+uint8 menu_FormatHour(uint8 phase);
 
-uint8 menu_ReadHour(DataIO_Type*);
+uint8 menu_ReadHour(uint8 phase);
 
-uint8 menu_ReadDate(DataIO_Type*);
+uint8 menu_ReadDate(uint8 phase);
 
-uint8 menu_CommTerminal2(DataIO_Type*);
+uint8 menu_CommTerminal2(uint8 phase);
 
-uint8 menu_EcoLCD(DataIO_Type*);
+uint8 menu_EcoLCD(uint8 phase);
 
 
 
