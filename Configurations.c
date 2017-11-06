@@ -32,6 +32,9 @@ typedef enum{
 
 const uint8 CR = 13;
 
+
+
+
 States_MenuType stateMenu(){
 
 	States_MenuType state = MENU;
@@ -72,33 +75,50 @@ States_MenuType stateRead(){
 	States_MenuType state = READ;
 	static DataIO_Type data;
 	static uint8 flagUART0 = FALSE;
-	static uint8 phaseState = 0;
+	static uint8 phase = 0;
 	static uint8 counter = 0;
 	uint8 inputAddress[5];
 	uint8 inputLenght[4];
 
-	if(FALSE == flagUART0){flagUART0 = menu_ReadI2C(phaseState);}
+
+	if(FALSE == flagUART0){flagUART0 = menu_ReadI2C(phase);}
+
+	if(phase == 2){
+		/**IMPORTANT PART**/
+		//Function to extract from memory
+		//Print the data
+		//Put the function to allocate with address and lenght
+		//data.AddressRead and data.lenght
+		//Function to decode the data
+		data.dataOut = "Test";
+		UART_putString(UART_0, data.dataOut);
+
+		phase = 3;
+	}
 
 	if(getUART0_flag()){
-		if(phaseState == 0){
+
+		switch(phase){
+		case 0:
 			if(getUART0_mailBox() != CR){
 				/**Sends to the PCA the received data in the mailbox*/
 				UART_putChar(UART_0, getUART0_mailBox());
 			}
 			if((counter > 1) && (counter < 8)){
-				inputAddress[counter] = getUART0_mailBox();
+				inputAddress[counter-2] = getUART0_mailBox();
 			}
 			counter++;
 
 			if(getUART0_mailBox() == CR){
-				data.addressRead = *inputAddress;
 
-				phaseState = 1;
+				data.addressRead = Convert_numberASCIItoDATA(inputAddress);
+
+				phase = 1;
 				counter = 0;
+				clearUART0_mailbox();
 			}
-		}
-
-		if(phaseState == 1){
+			break;
+		case 1:
 			if(getUART0_mailBox() != CR){
 				/**Sends to the PCA the received data in the mailbox*/
 				UART_putChar(UART_0, getUART0_mailBox());
@@ -108,35 +128,27 @@ States_MenuType stateRead(){
 			counter++;
 
 			if(getUART0_mailBox() == CR){
-				data.lenght = *inputLenght;
 
-				phaseState = 2;
+				data.lenght = Convert_numberASCIItoDATA(inputLenght);
+
+				phase = 2;
 				counter = 0;
+				clearUART0_mailbox();
 			}
-		}
-
-		if(phaseState == 3){
+			break;
+		case 2:
+			/**Nothing occurs in because the message is displayed**/
+			break;
+		case 3:
+			clearUART0_mailbox();
 			state = MENU;
+			break;
+		default:
+			break;
 		}
-
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
-	if(phaseState == 2){
-
-		/**IMPORTANT PART**/
-		//Function to extract from memory
-		//Print the data
-		//Put the function to allocate with address and lenght
-		//data.AddressRead and data.lenght
-		//Function to decode the data
-		data.dataOut = "DSPs";
-		UART_putString(UART_0, data.dataOut);
-
-		phaseState = 3;
-	}
-
 	return state;
 }
 

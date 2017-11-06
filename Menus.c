@@ -45,10 +45,6 @@ uint8 menu_ReadI2C(uint8 phase){
 
 	static Flags_Type flagContinue;
 
-	flagContinue.flag1 = FALSE;
-	flagContinue.flag2 = FALSE;
-	flagContinue.flag3 = FALSE;
-
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
@@ -62,7 +58,7 @@ uint8 menu_ReadI2C(uint8 phase){
 
 			flagContinue.flag1 = TRUE;
 		}
-		return TRUE;
+		return FALSE;
 	}
 
 	if(phase == 1){
@@ -72,7 +68,7 @@ uint8 menu_ReadI2C(uint8 phase){
 
 			flagContinue.flag2 = TRUE;
 		}
-		return TRUE;
+		return FALSE;
 	}
 
 	if(phase == 2){
@@ -83,7 +79,7 @@ uint8 menu_ReadI2C(uint8 phase){
 
 			flagContinue.flag3 = TRUE;
 		}
-		return TRUE;
+		return FALSE;
 	}
 
 
@@ -92,7 +88,7 @@ uint8 menu_ReadI2C(uint8 phase){
 			UART_putString(UART_0,"\033[16;10H");
 			UART_putString(UART_0, "Presione una tecla para continuar....\r");
 		}
-		return TRUE;
+		return FALSE;
 	}
 }
 

@@ -63,6 +63,14 @@ typedef struct{
 	uint8	error : 1;
 }DataIO_Type;
 
+typedef struct{
+	uint8 counter;
+	uint8 input[10];
+	uint8 state;
+}StateReadI2C_Type;
+
+
+
 
 
 

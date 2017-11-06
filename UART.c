@@ -218,12 +218,12 @@ uint8 clearUART0_mailbox(){
 
 uint32 expBASE10(uint8 limit){
 
-	static uint32 value = 10;
-	uint8 counter;
+	static uint32 value;
 
-	for(counter = 0; counter < (limit-1); counter++){
-		value *= 10;
-	}
+	if(limit == 0){	value = 1;}
+	if(limit == 1){	value = 10;}
+	if(limit > 1){	value *= 10;}
+
 	return value;
 }
 
