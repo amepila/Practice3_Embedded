@@ -105,7 +105,7 @@ int main(void){
 	mcg_clk_hz = pll_init(CLK_FREQ_HZ, LOW_POWER, EXTERNAL_CLOCK, PLL0_PRDIV, PLL0_VDIV, PLL_ENABLE);
 
 	/**First state in the program**/
-  	States_MenuType currentState = READ;
+  	States_MenuType currentState = WRITE;
 	States_MenuType(*mainFunctions)(void);
 
 	/**Configurations of devices**/

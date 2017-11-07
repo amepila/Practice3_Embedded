@@ -87,10 +87,10 @@ typedef struct{
 	uint32 realAddress;
 }StateWriteI2C_Type;
 
-typedef StateWriteI2C_Type(*fptrStateWriteI2C)(void);
+typedef StateWriteI2C_Type(*fptrStateWriteI2C)(StateWriteI2C_Type);
 
 typedef const struct StateWriteI2C{
-	StateWriteI2C_Type(*StateWriteI2C)(void);
+	StateWriteI2C_Type(*StateWriteI2C)(StateWriteI2C_Type);
 }StatePtrWrite_Type;
 /////////////////////////////////////////////////////
 
@@ -99,9 +99,9 @@ StateReadI2C_Type stateLenght(StateReadI2C_Type data);
 StateReadI2C_Type stateData(StateReadI2C_Type data);
 StateReadI2C_Type stateFinal(StateReadI2C_Type data);
 
-StateWriteI2C_Type stateAddressWrite();
-StateWriteI2C_Type stateDataWrite();
-StateWriteI2C_Type stateFinalWrite();
+StateWriteI2C_Type stateAddressWrite(StateWriteI2C_Type data);
+StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data);
+StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data);
 
 
 States_MenuType stateMenu();

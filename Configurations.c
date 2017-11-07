@@ -130,7 +130,7 @@ StateReadI2C_Type stateFinal(StateReadI2C_Type data){
 }
 
 /*************************************************************/
-StateWriteI2C_Type stateAddressWrite(){
+StateWriteI2C_Type stateAddressWrite(StateWriteI2C_Type data){
 
 	static StateWriteI2C_Type dataWrite1;
 	static uint32 counterWrite1 = 0;
@@ -156,7 +156,7 @@ StateWriteI2C_Type stateAddressWrite(){
 	return (dataWrite1);
 }
 
-StateWriteI2C_Type stateDataWrite(){
+StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data){
 
 	static StateWriteI2C_Type dataWrite2;
 	static uint32 counterWrite2 = 0;
@@ -179,8 +179,30 @@ StateWriteI2C_Type stateDataWrite(){
 	return (dataWrite2);
 }
 
-StateWriteI2C_Type stateFinalWrite(){
+StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data){
 
+	static StateWriteI2C_Type dataWrite3;
+	uint32 counterChar = 0;
+	uint32 counterSave;
+	uint32 counterAddress = 0;
+
+	data.realAddress;
+	data.inputData;
+
+	while(data.inputData[counterChar] != CR){
+		counterChar++;
+	}
+
+	for(counterSave = counterChar; counterSave != 0; counterSave--){
+		//Function to write in memory in I2C
+		counterAddress++;
+	}
+
+
+	clearUART0_mailbox();
+	dataWrite3.stateMain = MENU;
+
+	return (dataWrite3);
 }
 
 
@@ -255,23 +277,30 @@ States_MenuType stateRead(){
 States_MenuType stateWrite(){
 
 	static uint32 phase = 0;
-	static flagUART0 = FALSE;
+	static uint32 flagUART0 = FALSE;
 	static StateWriteI2C_Type stateWrite;
-	StateWriteI2C_Type(*writeFunctions)(void);
+	static StateWriteI2C_Type dataMemoryWrite;
+	StateWriteI2C_Type(*writeFunctions)(StateWriteI2C_Type);
 	stateWrite.stateMain = WRITE;
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_WriteI2C(phase);
 	}
 
+	if(phase == 1){	dataMemoryWrite.realAddress = stateWrite.realAddress;}
+	if(phase == 2){
+		dataMemoryWrite.inputData[0] = stateWrite.inputData[0];
+		writeFunctions = statesWriteI2C[phase].StateWriteI2C;
+		stateWrite = writeFunctions(dataMemoryWrite);
+	}
+
 	if(getUART0_flag()){
 		writeFunctions = statesWriteI2C[phase].StateWriteI2C;
-		stateWrite = writeFunctions();
+		stateWrite = writeFunctions(stateWrite);
 
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
 	phase = stateWrite.phaseState;
 
 	return (stateWrite.stateMain);
