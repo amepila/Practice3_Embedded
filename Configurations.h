@@ -73,10 +73,10 @@ typedef struct{
 	uint32 realLenght;
 }StateReadI2C_Type;
 
-typedef StateReadI2C_Type(*fptrStateReadI2C)(void);
+typedef StateReadI2C_Type(*fptrStateReadI2C)(StateReadI2C_Type);
 
 typedef const struct StateReadI2C{
-	StateReadI2C_Type(*StateReadI2C)(void);
+	StateReadI2C_Type(*StateReadI2C)(StateReadI2C_Type);
 }StatePtrRead_Type;
 /////////////////////////////////////////////////////
 typedef struct{
@@ -94,10 +94,14 @@ typedef const struct StateWriteI2C{
 }StatePtrWrite_Type;
 /////////////////////////////////////////////////////
 
-StateReadI2C_Type stateAddress();
-StateReadI2C_Type stateLenght();
-StateReadI2C_Type stateData();
-StateReadI2C_Type stateFinal();
+StateReadI2C_Type stateAddress(StateReadI2C_Type data);
+StateReadI2C_Type stateLenght(StateReadI2C_Type data);
+StateReadI2C_Type stateData(StateReadI2C_Type data);
+StateReadI2C_Type stateFinal(StateReadI2C_Type data);
+
+StateWriteI2C_Type stateAddressWrite();
+StateWriteI2C_Type stateDataWrite();
+StateWriteI2C_Type stateFinalWrite();
 
 
 States_MenuType stateMenu();

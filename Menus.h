@@ -28,7 +28,7 @@ uint8 menu_ReadI2C(uint8 phase);
 
 uint8 menu_WriteI2C(uint8 phase);
 
-uint8 menu_SetHour(uin8 phase);
+uint8 menu_SetHour(uint8 phase);
 
 uint8 menu_SetDate(uint8 phase);
 
