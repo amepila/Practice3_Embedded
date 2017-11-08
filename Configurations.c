@@ -237,6 +237,7 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	static uint32 counterMin = 0;
 	static uint32 counterSec = 0;
 	static FIFO_Type fifoTime;
+	static FlagHour_Type flagType = HOUR;
 
 	if(FORMAT_12H == data.format){
 
@@ -245,53 +246,66 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 			UART_putChar(UART_0, getUART0_mailBox());
 		}
 		/****************Set Hour***************************/
-		if((counterHour < 2) && (TRUE == data.flagHour)){
+		if((counterHour < 2) && (HOUR == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterHour++;
+			dataSet1.phaseState = 0;
 		}
-		if((counterHour == 2) && (TRUE == data.flagHour)){
+		if((counterHour == 2) && (HOUR == flagType)){
 			counterHour = 0;
+			dataSet1.phaseState = 0;
 		}
 		/****************Set Minutes***********************/
-		if((counterMin < 2) && (TRUE == data.flagMin)){
+		if((counterMin < 2) && (MINUTES == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterMin++;
+			dataSet1.phaseState = 0;
 		}
-		if((counterMin == 2) && (TRUE == data.flagMin)){
+		if((counterMin == 2) && (MINUTES == flagType)){
 			counterMin = 0;
+			dataSet1.phaseState = 0;
 		}
 		/******************Set Seconds*********************/
-		if((counterSec < 2) && (TRUE == data.flagSec)){
+		if((counterSec < 2) && (SECONDS == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterSec++;
+			dataSet1.phaseState = 0;
 		}
-		if((counterSec == 2) && (TRUE == data.flagSec)){
+		if((counterSec == 2) && (SECONDS == flagType)){
 			counterSec = 0;
+			dataSet1.phaseState = 0;
 		}
 		/******************Detector CR********************/
 		if(getUART0_mailBox() == CR){
 
-			if(data.flagHour){
+			if(HOUR == flagType){
+				counterHour = 0;
 				fifoTime = popFIFO_0();
+				dataSet1.phaseState = 0;
 				dataSet1.time.hour = Convert_numberASCIItoDATA(fifoTime.data);
 				clearFIFO_0();
 				clearUART0_mailbox();
 				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
-			if(data.flagMin){
+			if(MINUTES == flagType){
+				counterMin = 0;
 				fifoTime = popFIFO_0();
+				dataSet1.phaseState = 0;
 				dataSet1.time.minutes = Convert_numberASCIItoDATA(fifoTime.data);
 				clearFIFO_0();
 				clearUART0_mailbox();
 				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
-			if(data.flagSec){
+			if(SECONDS == flagType){
+				counterSec = 0;
 				fifoTime = popFIFO_0();
 				dataSet1.time.seconds = Convert_numberASCIItoDATA(fifoTime.data);
 				dataSet1.phaseState = 1;
 				clearFIFO_0();
 				clearUART0_mailbox();
 			}
+			flagType++;
+			if(flagType > 2){flagType = HOUR;}
 		}
 	}
 	if(FORMAT_24H == data.format){
@@ -301,56 +315,60 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 			UART_putChar(UART_0, getUART0_mailBox());
 		}
 		/****************Set Hour***************************/
-		if((counterHour < 2) && (TRUE == data.flagHour)){
+		if((counterHour < 2) && (HOUR == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterHour++;
 		}
-
-		if((counterHour == 2) && (TRUE == data.flagHour)){
+		if((counterHour == 2) && (HOUR == flagType)){
 			counterHour = 0;
 		}
 		/****************Set Minutes***********************/
-		if((counterMin < 2) && (TRUE == data.flagMin)){
+		if((counterMin < 2) && (MINUTES == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterMin++;
 		}
-
-		if((counterMin == 2) && (TRUE == data.flagMin)){
+		if((counterMin == 2) && (MINUTES == flagType)){
 			counterMin = 0;
 		}
 		/******************Set Seconds*********************/
-		if((counterSec < 2) && (TRUE == data.flagSec)){
+		if((counterSec < 2) && (SECONDS == flagType)){
 			pushFIFO_0(getUART0_mailBox());
-			counterMin++;
+			counterSec++;
 		}
-
-		if((counterSec == 2) && (TRUE == data.flagSec)){
+		if((counterSec == 2) && (SECONDS == flagType)){
 			counterSec = 0;
 		}
 		/******************Detector CR********************/
 		if(getUART0_mailBox() == CR){
 
-			if(data.flagHour){
+			if(HOUR == flagType){
+				counterHour = 0;
 				fifoTime = popFIFO_0();
+				dataSet1.phaseState = 0;
 				dataSet1.time.hour = Convert_numberASCIItoDATA(fifoTime.data);
 				clearFIFO_0();
 				clearUART0_mailbox();
 				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
-			if(data.flagMin){
+			if(MINUTES == flagType){
+				counterMin = 0;
 				fifoTime = popFIFO_0();
+				dataSet1.phaseState = 0;
 				dataSet1.time.minutes = Convert_numberASCIItoDATA(fifoTime.data);
 				clearFIFO_0();
 				clearUART0_mailbox();
 				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
-			if(data.flagHour){
+			if(SECONDS == flagType){
+				counterSec = 0;
 				fifoTime = popFIFO_0();
 				dataSet1.time.seconds = Convert_numberASCIItoDATA(fifoTime.data);
 				dataSet1.phaseState = 1;
 				clearFIFO_0();
 				clearUART0_mailbox();
 			}
+			flagType++;
+			if(flagType > 2){flagType = HOUR;}
 		}
 	}
 
@@ -599,13 +617,22 @@ States_MenuType stateSetHour(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagInit_Format;
 	static StateSetHour_Type state_SetHour;
 	static StateSetHour_Type dataMemory_SetHour;
 	StateSetHour_Type(*setHourFunctions)(StateSetHour_Type);
-	state_SetHour.stateMain = WRITE;
+	state_SetHour.stateMain = SET_HOUR;
+
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetHour(phase);
+	}
+	if(phase == 0){
+		if(FALSE == flagInit_Format){
+			clearUART0_mailbox();
+			state_SetHour.format = realTime.hour.format;
+			flagInit_Format = TRUE;
+		}
 	}
 	if(phase == 1){
 		dataMemory_SetHour.time = state_SetHour.time;
@@ -620,6 +647,7 @@ States_MenuType stateSetHour(Time_Type realTime){
 		if(phase == 2){
 			state_SetHour.phaseState = 0;
 			flagUART0 = FALSE;
+			flagInit_Format = FALSE;
 		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
@@ -635,7 +663,7 @@ States_MenuType stateSetDate(Time_Type realTime){
 	static StateSetDate_Type state_SetDate;
 	static StateSetDate_Type dataMemory_SetDate;
 	StateSetDate_Type(*setDateFunctions)(StateSetDate_Type);
-	state_SetDate.stateMain = WRITE;
+	state_SetDate.stateMain = SET_DATE;
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetDate(phase);

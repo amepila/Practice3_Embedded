@@ -29,10 +29,13 @@ typedef enum{
 	ECO
 }States_MenuType;
 
+typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
+
 typedef struct{
 	uint32	hour;
 	uint32	minutes;
 	uint32	seconds;
+	FORMAT_HOUR format;
 }Hour_Type;
 
 typedef struct{
@@ -54,7 +57,6 @@ typedef const struct State{
 	States_MenuType (*stateFunction)(Time_Type);
 }StateType;
 
-typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
 
 typedef struct{
 	uint32	addressWrite;
@@ -104,10 +106,9 @@ typedef struct{
 	States_MenuType stateMain;
 	Hour_Type time;
 	FORMAT_HOUR format;
-	uint32 flagHour : 1;
-	uint32 flagMin  : 1;
-	uint32 flagSec  : 1;
 }StateSetHour_Type;
+
+typedef enum{HOUR, MINUTES, SECONDS}FlagHour_Type;
 
 typedef StateSetHour_Type(*fptrStateSetHour)(StateSetHour_Type);
 

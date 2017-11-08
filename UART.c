@@ -229,9 +229,9 @@ uint32 Convert_numberASCIItoDATA(uint8 *string){
 
 	const uint32 adjustASCII = 48;
 	const uint32 CR = 13;
-	uint8 counter1 = 0;
-	uint8 counter2 = 0;
-	uint8 counter3 = 0;
+	uint32 counter1 = 0;
+	uint32 counter2 = 0;
+	uint32 counter3 = 0;
 	uint32 data;
 	uint32 tmpData1 = 0;
 	uint32 tmpData2 = 0;
@@ -307,6 +307,7 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 		counterChar++;
 		FIFO_UART0.stateFIFO = NORMAL;
 	}else{
+		FIFO_UART0.data[counterChar] = character;
 		FIFO_UART0.size = counterChar;
 		counterChar = 0;
 		FIFO_UART0.stateFIFO = NORMAL;
