@@ -318,25 +318,33 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		if((counterHour < 2) && (HOUR == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterHour++;
+			dataSet1.phaseState = 0;
+
 		}
 		if((counterHour == 2) && (HOUR == flagType)){
 			counterHour = 0;
+			dataSet1.phaseState = 0;
+
 		}
 		/****************Set Minutes***********************/
 		if((counterMin < 2) && (MINUTES == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterMin++;
+			dataSet1.phaseState = 0;
 		}
 		if((counterMin == 2) && (MINUTES == flagType)){
 			counterMin = 0;
+			dataSet1.phaseState = 0;
 		}
 		/******************Set Seconds*********************/
 		if((counterSec < 2) && (SECONDS == flagType)){
 			pushFIFO_0(getUART0_mailBox());
 			counterSec++;
+			dataSet1.phaseState = 0;
 		}
 		if((counterSec == 2) && (SECONDS == flagType)){
 			counterSec = 0;
+			dataSet1.phaseState = 0;
 		}
 		/******************Detector CR********************/
 		if(getUART0_mailBox() == CR){
@@ -403,58 +411,72 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 	static uint32 counterMonth = 0;
 	static uint32 counterDay = 0;
 	static FIFO_Type fifoTime;
+	static FlagDate_Type flagType= YEAR;
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, getUART0_mailBox());
 	}
 	/****************Set Year***************************/
-	if((counterYear < 2) && (TRUE == data.flagYear)){
+	if((counterYear < 2) && (YEAR == flagType)){
 		pushFIFO_0(getUART0_mailBox());
 		counterYear++;
+		dataSetDate1.phaseState = 0;
 	}
-	if((counterYear == 2) && (TRUE == data.flagYear)){
+	if((counterYear == 2) && (YEAR == flagType)){
 		counterYear = 0;
+		dataSetDate1.phaseState = 0;
 	}
 	/****************Set Month***********************/
-	if((counterMonth < 2) && (TRUE == data.flagMonth)){
+	if((counterMonth < 2) && (MONTH == flagType)){
 		pushFIFO_0(getUART0_mailBox());
 		counterMonth++;
+		dataSetDate1.phaseState = 0;
 	}
-	if((counterMonth == 2) && (TRUE == data.flagMonth)){
+	if((counterMonth == 2) && (MONTH == flagType)){
 		counterMonth = 0;
+		dataSetDate1.phaseState = 0;
 	}
 	/******************Set Days*********************/
-	if((counterDay < 2) && (TRUE == data.flagDay)){
+	if((counterDay < 2) && (DAY == flagType)){
 		pushFIFO_0(getUART0_mailBox());
 		counterDay++;
+		dataSetDate1.phaseState = 0;
 	}
-	if((counterDay == 2) && (TRUE == data.flagDay)){
+	if((counterDay == 2) && (DAY == flagType)){
 		counterDay = 0;
+		dataSetDate1.phaseState = 0;
 	}
 	/******************Detector CR********************/
 	if(getUART0_mailBox() == CR){
-		if(data.flagYear){
+		if(YEAR == flagType){
+			counterYear = 0;
 			fifoTime = popFIFO_0();
+			dataSetDate1.phaseState = 0;
 			dataSetDate1.time.year = Convert_numberASCIItoDATA(fifoTime.data);
 			clearFIFO_0();
 			clearUART0_mailbox();
 			UART_putChar(UART_0, ASCII_DIAG);
 		}
-		if(data.flagMonth){
+		if(MONTH == flagType){
+			counterMonth = 0;
 			fifoTime = popFIFO_0();
+			dataSetDate1.phaseState = 0;
 			dataSetDate1.time.month = Convert_numberASCIItoDATA(fifoTime.data);
 			clearFIFO_0();
 			clearUART0_mailbox();
 			UART_putChar(UART_0, ASCII_DIAG);
 		}
-		if(data.flagDay){
+		if(DAY == flagType){
+			counterDay = 0;
 			fifoTime = popFIFO_0();
 			dataSetDate1.time.day = Convert_numberASCIItoDATA(fifoTime.data);
 			dataSetDate1.phaseState = 1;
 			clearFIFO_0();
 			clearUART0_mailbox();
 		}
+		flagType++;
+		if(flagType > 2){flagType = YEAR;}
 	}
 
 	dataSetDate1.stateMain = SET_DATE;
@@ -660,6 +682,7 @@ States_MenuType stateSetDate(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagInit_Format;
 	static StateSetDate_Type state_SetDate;
 	static StateSetDate_Type dataMemory_SetDate;
 	StateSetDate_Type(*setDateFunctions)(StateSetDate_Type);
@@ -667,6 +690,12 @@ States_MenuType stateSetDate(Time_Type realTime){
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetDate(phase);
+	}
+	if(phase == 0){
+		if(FALSE == flagInit_Format){
+			clearUART0_mailbox();
+			flagInit_Format = TRUE;
+		}
 	}
 	if(phase == 1){
 		dataMemory_SetDate.time = state_SetDate.time;
@@ -681,6 +710,7 @@ States_MenuType stateSetDate(Time_Type realTime){
 		if(phase == 2){
 			state_SetDate.phaseState = 0;
 			flagUART0 = FALSE;
+			flagInit_Format = FALSE;
 		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
