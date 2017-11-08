@@ -85,6 +85,7 @@ typedef struct{
 	uint32 phaseState;
 	States_MenuType stateMain;
 	uint32 realAddress;
+	uint32 sizeData;
 }StateWriteI2C_Type;
 
 typedef StateWriteI2C_Type(*fptrStateWriteI2C)(StateWriteI2C_Type);
@@ -93,6 +94,22 @@ typedef const struct StateWriteI2C{
 	StateWriteI2C_Type(*StateWriteI2C)(StateWriteI2C_Type);
 }StatePtrWrite_Type;
 /////////////////////////////////////////////////////
+typedef struct{
+	uint32 phaseState;
+	States_MenuType stateMain;
+	Hour_Type time;
+	FORMAT_HOUR format;
+	uint32 flagHour : 1;
+	uint32 flagMin  : 1;
+	uint32 flagSec  : 1;
+}StateSetHour_Type;
+
+typedef StateSetHour_Type(*fptrStateSetHour)(StateSetHour_Type);
+
+typedef const struct StateSetHour{
+	StateSetHour_Type(*StateSetHour)(StateSetHour_Type);
+}StatePtrSetHour_Type;
+////////////////////////////////////////////////////
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
 StateReadI2C_Type stateLenght(StateReadI2C_Type data);
@@ -103,6 +120,8 @@ StateWriteI2C_Type stateAddressWrite(StateWriteI2C_Type data);
 StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data);
 StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data);
 
+StateSetHour_Type stateSetTime(StateSetHour_Type data);
+StateSetHour_Type stateSave(StateSetHour_Type data);
 
 States_MenuType stateMenu();
 States_MenuType stateRead();

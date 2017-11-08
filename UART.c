@@ -22,12 +22,12 @@ const float BRFD_Type[32] = {
 
 void UART0_RX_TX_IRQHandler (void){
 	/*First is verified if the serial port finished to transmit*/
-	if((UART0->S1 & UART_S1_RDRF_MASK)){
-		/*The info is saved in Data Register*/
-		UART0_MailBox.mailBox = UART0->D;
-		/*There are new data*/
-		UART0_MailBox.flag = 1;
-	}
+	while(!(UART0->S1 & UART_S1_RDRF_MASK));
+	/*The info is saved in Data Register*/
+	UART0_MailBox.mailBox = UART0->D;
+	/*There are new data*/
+	UART0_MailBox.flag = 1;
+
 }
 
 uint8 getUART0_mailBox(){
@@ -173,8 +173,6 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 	UART0->C2 |= (UART_C2_RE_MASK);
 	/*Enable Tx of UART*/
 	UART0->C2 |= (UART_C2_TE_MASK);
-
-	clearUART0_mailbox();
 }
 
 void UART0_interruptEnable(UART_ChannelType uartChannel){
@@ -187,26 +185,25 @@ void UART0_interruptEnable(UART_ChannelType uartChannel){
 
 void UART_putChar (UART_ChannelType uartChannel, uint8 character){
 	/*Check if there isn't data transmission*/
-	if((UART0->S1 & UART_S1_TDRE_MASK)){
-		/*Send character to Data Register*/
-		UART0->D |= character;
-		delay(S);
-	}
+	while(!(UART0->S1 & UART_S1_TDRE_MASK));
+	/*Send character to Data Register*/
+	UART0->D = character;
+	delay(S);
 }
 
 void UART_putString(UART_ChannelType uartChannel, sint8* string){
 	/*Counter that verifies each position of the array*/
 	uint8 counter = 0;
 	/*Check if there isn't data transmission*/
-	if((UART0->S1 & UART_S1_TDRE_MASK)){
-		/*Transmit the data until find the NULL value*/
-		while(string[counter] != '\0'){
-			/*Each character of string is send to Data Register*/
-			UART0->D |= string[counter];
-			/*Move to next position in the array*/
-			counter++;
-			delay(S);
-		}
+	while(!(UART0->S1 & UART_S1_TDRE_MASK));
+	/*Transmit the data until find the NULL value*/
+	while(string[counter] != '\0'){
+		/*Each character of string is send to Data Register*/
+		UART0->D = string[counter];
+		/*Move to next position in the array*/
+		counter++;
+		delay(S);
+
 	}
 }
 

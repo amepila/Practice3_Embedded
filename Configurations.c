@@ -48,6 +48,12 @@ const StatePtrWrite_Type statesWriteI2C[3] =
 		{stateFinalWrite}
 };
 
+const StatePtrSetHour_Type statesSetHour[2] =
+{
+		{stateSetTime},
+		{stateSave}
+};
+
 /********************************************************************/
 /********************************************************************/
 StateReadI2C_Type stateAddress(StateReadI2C_Type data){
@@ -171,6 +177,7 @@ StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data){
 
 	if(getUART0_mailBox() == CR){
 
+		dataWrite2.sizeData = counterWrite2;
 		dataWrite2.phaseState = 2;
 		counterWrite2 = 0;
 		clearUART0_mailbox();
@@ -186,9 +193,6 @@ StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data){
 	uint32 counterSave;
 	uint32 counterAddress = 0;
 
-	data.realAddress;
-	data.inputData;
-
 	while(data.inputData[counterChar] != CR){
 		counterChar++;
 	}
@@ -197,14 +201,172 @@ StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data){
 		//Function to write in memory in I2C
 		counterAddress++;
 	}
-
-
 	clearUART0_mailbox();
 	dataWrite3.stateMain = MENU;
 
 	return (dataWrite3);
 }
+/**********************************************************/
+StateSetHour_Type stateSetTime(StateSetHour_Type data){
 
+	static StateSetHour_Type dataSet1;
+	static uint32 counterHour = 0;
+	static uint32 counterMin = 0;
+	static uint32 counterSec = 0;
+	static uint8 tmpHour[2];
+	static uint8 tmpMin[2];
+	static uint8 tmpSec[2];
+
+	if(FORMAT_12H == data.format){
+
+		if(getUART0_mailBox() != CR){
+			/**Sends to the PCA the received data in the mailbox*/
+			UART_putChar(UART_0, getUART0_mailBox());
+		}
+		/****************Set Hour***************************/
+		if((counterHour < 2) && (TRUE == data.flagHour)){
+			if(counterHour == 0){
+				tmpHour[counterHour] = getUART0_mailBox();
+				counterHour++;
+			}
+			if(counterHour == 1){
+				tmpHour[counterHour] = getUART0_mailBox();
+				counterHour++;
+			}
+		}
+
+		if((counterHour == 2) && (TRUE == data.flagHour)){
+			counterHour = 0;
+		}
+		/****************Set Minutes***********************/
+		if((counterMin < 2) && (TRUE == data.flagMin)){
+			if(counterMin == 0){
+				tmpMin[counterMin] = getUART0_mailBox();
+				counterMin++;
+			}
+			if(counterMin == 1){
+				tmpMin[counterMin] = getUART0_mailBox();
+				counterMin++;
+			}
+		}
+
+		if((counterMin == 2) && (TRUE == data.flagMin)){
+			counterMin = 0;
+		}
+		/******************Set Seconds*********************/
+		if((counterSec < 2) && (TRUE == data.flagSec)){
+			if(counterSec == 0){
+				tmpMin[counterSec] = getUART0_mailBox();
+				counterSec++;
+			}
+			if(counterSec == 1){
+				tmpMin[counterSec] = getUART0_mailBox();
+				counterSec++;
+			}
+		}
+
+		if((counterSec == 2) && (TRUE == data.flagSec)){
+			counterSec = 0;
+		}
+		/******************Detector CR********************/
+		if(getUART0_mailBox() == CR){
+
+			if(data.flagHour){
+				dataSet1.time.hour = Convert_numberASCIItoDATA(tmpHour);
+				clearUART0_mailbox();
+			}
+			if(data.flagMin){
+				dataSet1.time.minutes = Convert_numberASCIItoDATA(tmpMin);
+				clearUART0_mailbox();
+			}
+			if(data.flagSec){
+				dataSet1.time.seconds = Convert_numberASCIItoDATA(tmpSec);
+				dataSet1.phaseState = 1;
+				clearUART0_mailbox();
+			}
+		}
+	}
+	if(FORMAT_24H == data.format){
+
+		if(getUART0_mailBox() != CR){
+			/**Sends to the PCA the received data in the mailbox*/
+			UART_putChar(UART_0, getUART0_mailBox());
+		}
+		/****************Set Hour***************************/
+		if((counterHour < 2) && (TRUE == data.flagHour)){
+			if(counterHour == 0){
+				tmpHour[counterHour] = getUART0_mailBox();
+				counterHour++;
+			}
+			if(counterHour == 1){
+				tmpHour[counterHour] = getUART0_mailBox();
+				counterHour++;
+			}
+		}
+
+		if((counterHour == 2) && (TRUE == data.flagHour)){
+			counterHour = 0;
+		}
+		/****************Set Minutes***********************/
+		if((counterMin < 2) && (TRUE == data.flagMin)){
+			if(counterMin == 0){
+				tmpMin[counterMin] = getUART0_mailBox();
+				counterMin++;
+			}
+			if(counterMin == 1){
+				tmpMin[counterMin] = getUART0_mailBox();
+				counterMin++;
+			}
+		}
+
+		if((counterMin == 2) && (TRUE == data.flagMin)){
+			counterMin = 0;
+		}
+		/******************Set Seconds*********************/
+		if((counterSec < 2) && (TRUE == data.flagSec)){
+			if(counterSec == 0){
+				tmpMin[counterSec] = getUART0_mailBox();
+				counterSec++;
+			}
+			if(counterSec == 1){
+				tmpMin[counterSec] = getUART0_mailBox();
+				counterSec++;
+			}
+		}
+
+		if((counterSec == 2) && (TRUE == data.flagSec)){
+			counterSec = 0;
+		}
+		/******************Detector CR********************/
+		if(getUART0_mailBox() == CR){
+
+			if(data.flagHour){
+				dataSet1.time.hour = Convert_numberASCIItoDATA(tmpHour);
+				clearUART0_mailbox();
+			}
+			if(data.flagMin){
+				dataSet1.time.minutes = Convert_numberASCIItoDATA(tmpMin);
+				clearUART0_mailbox();
+			}
+			if(data.flagHour){
+				dataSet1.time.seconds = Convert_numberASCIItoDATA(tmpSec);
+				dataSet1.phaseState = 1;
+				clearUART0_mailbox();
+			}
+		}
+	}
+
+	dataSet1.stateMain = SET_HOUR;
+	return (dataSet1);
+}
+
+StateSetHour_Type stateSave(StateSetHour_Type data){
+
+	static StateSetHour_Type dataSet2;
+
+
+	return (dataSet2);
+}
 
 /********************************************************/
 /********************************************************/
@@ -282,6 +444,7 @@ States_MenuType stateWrite(){
 	static StateWriteI2C_Type dataMemoryWrite;
 	StateWriteI2C_Type(*writeFunctions)(StateWriteI2C_Type);
 	stateWrite.stateMain = WRITE;
+	uint32 counterChar;
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_WriteI2C(phase);
@@ -289,7 +452,10 @@ States_MenuType stateWrite(){
 
 	if(phase == 1){	dataMemoryWrite.realAddress = stateWrite.realAddress;}
 	if(phase == 2){
-		dataMemoryWrite.inputData[0] = stateWrite.inputData[0];
+		dataMemoryWrite.sizeData = stateWrite.sizeData;
+		for(counterChar = 0; counterChar < dataMemoryWrite.sizeData; counterChar++){
+			dataMemoryWrite.inputData[counterChar] = stateWrite.inputData[counterChar];
+		}
 		writeFunctions = statesWriteI2C[phase].StateWriteI2C;
 		stateWrite = writeFunctions(dataMemoryWrite);
 	}
@@ -308,17 +474,31 @@ States_MenuType stateWrite(){
 
 States_MenuType stateSetHour(){
 
-	States_MenuType state = SET_HOUR;
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateSetHour_Type state_SetHour;
+	static StateSetHour_Type dataMemory_SetHour;
+	StateSetHour_Type(*setHourFunctions)(StateSetHour_Type);
+	state_SetHour.stateMain = WRITE;
+
+	if(FALSE == flagUART0){
+		flagUART0 = menu_SetHour(phase);
+	}
+	if(phase == 1){
+		dataMemory_SetHour.time = state_SetHour.time;
+		setHourFunctions = statesSetHour[phase].StateSetHour;
+		state_SetHour = setHourFunctions(dataMemory_SetHour);
+	}
 
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		setHourFunctions = statesSetHour[phase].StateSetHour;
+		state_SetHour = setHourFunctions(state_SetHour);
 
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
-	return state;
+	phase = state_SetHour.phaseState;
+	return (state_SetHour.stateMain);
 }
 
 States_MenuType stateSetDate(){
