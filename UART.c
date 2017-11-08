@@ -11,6 +11,8 @@
 /*Global variable that saves the info*/
 UART_MailBoxType UART0_MailBox;
 
+FIFO_Type FIFO_UART0;
+FIFO_Type FIFO_UART1;
 
 /*Table of BRFD. Range 0:31 */
 const float BRFD_Type[32] = {
@@ -208,7 +210,6 @@ void UART_putString(UART_ChannelType uartChannel, sint8* string){
 }
 
 uint8 clearUART0_mailbox(){
-	UART0_MailBox.flag = FALSE;
 	UART0_MailBox.mailBox = 0;
 	return TRUE;
 }
@@ -269,4 +270,56 @@ uint8 Convert_wordASCIItoDATA(uint8 word){
 	return (valueWord);
 }
 
+FIFO_Type popFIFO_0(void){
+
+	uint32 counterSize = 0;
+	uint32 position = 0;
+	static uint32 counterChar;
+	FIFO_Type fifo;
+
+	while(FIFO_UART0.data[counterSize] != '\0'){
+		counterSize++;
+	}
+
+	for(counterChar = counterSize; counterChar != 0; counterChar--){
+		fifo.data[position] = FIFO_UART0.data[position];
+		position++;
+	}
+	fifo.size = counterSize;
+	fifo.stateFIFO = EMPTY;
+	return (fifo);
+}
+
+FIFO_FlagType pushFIFO_0(uint8 character){
+
+	static uint32 counterChar = 0;
+	const uint32 CR = 13;
+
+	if(character != CR){
+		FIFO_UART0.data[counterChar] = character;
+		counterChar++;
+		FIFO_UART0.stateFIFO = NORMAL;
+	}else{
+		FIFO_UART0.size = counterChar;
+		counterChar = 0;
+		FIFO_UART0.stateFIFO = NORMAL;
+		if(FIFO_UART0.size >= 50){
+			FIFO_UART0.stateFIFO = FULL;
+		}
+	}
+	return (FIFO_UART0.stateFIFO);
+}
+
+FIFO_FlagType clearFIFO_0(void){
+
+	uint32 counter;
+
+	for(counter = 0; counter < 50; counter++){
+		FIFO_UART0.data[counter] = '\0';
+	}
+	FIFO_UART0.size = 0;
+	FIFO_UART0.stateFIFO = EMPTY;
+
+	return (FIFO_UART0.stateFIFO);
+}
 

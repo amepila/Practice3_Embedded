@@ -39,6 +39,13 @@ typedef enum {UART_0,UART_1,UART_2,UART_3,UART_4,UART_5}UART_ChannelType;
  */
 typedef enum {BD_4800=4800,BD_9600=9600,BD_5600=5600, BD_115200=115200}UART_BaudRateType;
 
+typedef enum {EMPTY, NORMAL, FULL}FIFO_FlagType;
+
+typedef struct{
+	uint8 data[50];
+	FIFO_FlagType stateFIFO;
+	uint32 size;
+}FIFO_Type;
 
 void delay(uint32 delay);
 
@@ -110,6 +117,9 @@ uint8 clearUART0_mailbox();
 uint32 expBASE10(uint8 limit);
 uint32 Convert_numberASCIItoDATA(uint8 *string);
 uint8 Convert_wordASCIItoDATA(uint8 word);
+FIFO_Type popFIFO_0(void);
+FIFO_FlagType pushFIFO_0(uint8 character);
+FIFO_FlagType clearFIFO_0(void);
 
 #endif /* UART_H_ */
 

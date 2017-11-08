@@ -141,16 +141,19 @@ uint8 menu_WriteI2C(uint8 phase){
 
 uint8 menu_SetHour(uint8 phase){
 
+	static Flags_Type flagContinue;
+
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
-	/*VT100 command for clearing the screen*/
-	UART_putString(UART_0,"\033[2J");
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[10;10H");
-	UART_putString(UART_0, "Escribir hora en hh/mm/ss:\t");
-	//UART_putString(UART_0, &data.addressRead);
-	UART_putString(UART_0,"\r");
+	if(phase == 0){
+		/*VT100 command for clearing the screen*/
+		UART_putString(UART_0,"\033[2J");
+		/** VT100 command for positioning the cursor in x and y position*/
+		UART_putString(UART_0,"\033[10;10H");
+		UART_putString(UART_0, "Escribir hora en hh/mm/ss:\t");
+	}
+
 
 	UART_putString(UART_0,"\033[11;10H");
 	UART_putString(UART_0, "La hora ha sido cambiada...: \r");

@@ -374,8 +374,7 @@ States_MenuType stateMenu(){
 
 	States_MenuType state = MENU;
 	static uint32 flagUART0 = FALSE;
-	static uint32 counter = 0;
-	uint8 optionMenu[2];
+	FIFO_Type fifoMenu;
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
@@ -383,23 +382,30 @@ States_MenuType stateMenu(){
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, getUART0_mailBox());
 		/**Saves the input data in an array of 2 spaces**/
-		optionMenu[counter] = getUART0_mailBox();
+		pushFIFO_0(getUART0_mailBox());
 
-		if((optionMenu[0] == ASCII_1) && (optionMenu[1] == CR)){state = READ;}
-		if((optionMenu[0] == ASCII_2) && (optionMenu[1] == CR)){state = WRITE;}
-		if((optionMenu[0] == ASCII_3) && (optionMenu[1] == CR)){state = SET_HOUR;}
-		if((optionMenu[0] == ASCII_4) && (optionMenu[1] == CR)){state = SET_DATE;}
-		if((optionMenu[0] == ASCII_5) && (optionMenu[1] == CR)){state = FORMAT;}
-		if((optionMenu[0] == ASCII_6) && (optionMenu[1] == CR)){state = READ_HOUR;}
-		if((optionMenu[0] == ASCII_7) && (optionMenu[1] == CR)){state = READ_DATE;}
-		if((optionMenu[0] == ASCII_8) && (optionMenu[1] == CR)){state = TERMINAL2;}
-		if((optionMenu[0] == ASCII_9) && (optionMenu[1] == CR)){state = ECO;}
+		if(getUART0_mailBox() == CR){
 
-		counter++;
-		if(counter > 1){counter = 0;}
+			fifoMenu = popFIFO_0();
 
+			if(fifoMenu.data[0] == ASCII_1){state = READ;}
+			if(fifoMenu.data[0] == ASCII_2){state = WRITE;}
+			if(fifoMenu.data[0] == ASCII_3){state = SET_HOUR;}
+			if(fifoMenu.data[0] == ASCII_4){state = SET_DATE;}
+			if(fifoMenu.data[0] == ASCII_5){state = FORMAT;}
+			if(fifoMenu.data[0] == ASCII_6){state = READ_HOUR;}
+			if(fifoMenu.data[0] == ASCII_7){state = READ_DATE;}
+			if(fifoMenu.data[0] == ASCII_8){state = TERMINAL2;}
+			if(fifoMenu.data[0] == ASCII_9){state = ECO;}
+
+			fifoMenu.stateFIFO = clearFIFO_0();
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
+	}
+	if((state != MENU) && (EMPTY == fifoMenu.stateFIFO)){
+		clearUART0_mailbox();
+		flagUART0 = FALSE;
 	}
 	return (state);
 }
