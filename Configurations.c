@@ -38,20 +38,29 @@ const StatePtrRead_Type statesReadI2C[4] =
 		{stateAddress},
 		{stateLenght},
 		{stateData},
-		{stateFinal}
+		{stateFinalReadI2C}
 };
 
-const StatePtrWrite_Type statesWriteI2C[3] =
+const StatePtrWrite_Type statesWriteI2C[4] =
 {
 		{stateAddressWrite},
 		{stateDataWrite},
-		{stateFinalWrite}
+		{stateFinalWrite},
+		{stateFinalWriteI2C}
 };
 
-const StatePtrSetHour_Type statesSetHour[2] =
+const StatePtrSetHour_Type statesSetHour[3] =
 {
 		{stateSetTime},
-		{stateSave}
+		{stateSaveTime},
+		{stateFinalSetHour}
+};
+
+const StatePtrSetDate_Type statesSetDate[3] =
+{
+		{stateSetCalendar},
+		{stateSaveDate},
+		{stateFinalSetDate}
 };
 
 /********************************************************************/
@@ -109,6 +118,7 @@ StateReadI2C_Type stateLenght(StateReadI2C_Type data){
 StateReadI2C_Type stateData(StateReadI2C_Type data){
 
 	static StateReadI2C_Type dataState3;
+
 	//uint8 data[5] = {'h', 'o', 'l', 'a'};
 
 	/**IMPORTANT PART**/
@@ -126,7 +136,8 @@ StateReadI2C_Type stateData(StateReadI2C_Type data){
 	return (dataState3);
 
 }
-StateReadI2C_Type stateFinal(StateReadI2C_Type data){
+StateReadI2C_Type stateFinalReadI2C(StateReadI2C_Type data){
+
 	static StateReadI2C_Type dataState4;
 
 	clearUART0_mailbox();
@@ -201,11 +212,22 @@ StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data){
 		//Function to write in memory in I2C
 		counterAddress++;
 	}
-	clearUART0_mailbox();
-	dataWrite3.stateMain = MENU;
+	dataWrite3.stateMain = WRITE;
 
 	return (dataWrite3);
 }
+
+StateWriteI2C_Type stateFinalWriteI2C(StateWriteI2C_Type data){
+
+	static StateWriteI2C_Type dataWrite4;
+
+	clearUART0_mailbox();
+	dataWrite4.stateMain = MENU;
+
+	return (dataWrite4);
+}
+
+
 /**********************************************************/
 StateSetHour_Type stateSetTime(StateSetHour_Type data){
 
@@ -213,9 +235,7 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	static uint32 counterHour = 0;
 	static uint32 counterMin = 0;
 	static uint32 counterSec = 0;
-	static uint8 tmpHour[2];
-	static uint8 tmpMin[2];
-	static uint8 tmpSec[2];
+	static FIFO_Type fifoTime;
 
 	if(FORMAT_12H == data.format){
 
@@ -225,46 +245,25 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		}
 		/****************Set Hour***************************/
 		if((counterHour < 2) && (TRUE == data.flagHour)){
-			if(counterHour == 0){
-				tmpHour[counterHour] = getUART0_mailBox();
-				counterHour++;
-			}
-			if(counterHour == 1){
-				tmpHour[counterHour] = getUART0_mailBox();
-				counterHour++;
-			}
+			pushFIFO_0(getUART0_mailBox());
+			counterHour++;
 		}
-
 		if((counterHour == 2) && (TRUE == data.flagHour)){
 			counterHour = 0;
 		}
 		/****************Set Minutes***********************/
 		if((counterMin < 2) && (TRUE == data.flagMin)){
-			if(counterMin == 0){
-				tmpMin[counterMin] = getUART0_mailBox();
-				counterMin++;
-			}
-			if(counterMin == 1){
-				tmpMin[counterMin] = getUART0_mailBox();
-				counterMin++;
-			}
+			pushFIFO_0(getUART0_mailBox());
+			counterMin++;
 		}
-
 		if((counterMin == 2) && (TRUE == data.flagMin)){
 			counterMin = 0;
 		}
 		/******************Set Seconds*********************/
 		if((counterSec < 2) && (TRUE == data.flagSec)){
-			if(counterSec == 0){
-				tmpMin[counterSec] = getUART0_mailBox();
-				counterSec++;
-			}
-			if(counterSec == 1){
-				tmpMin[counterSec] = getUART0_mailBox();
-				counterSec++;
-			}
+			pushFIFO_0(getUART0_mailBox());
+			counterSec++;
 		}
-
 		if((counterSec == 2) && (TRUE == data.flagSec)){
 			counterSec = 0;
 		}
@@ -272,16 +271,24 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		if(getUART0_mailBox() == CR){
 
 			if(data.flagHour){
-				dataSet1.time.hour = Convert_numberASCIItoDATA(tmpHour);
+				fifoTime = popFIFO_0();
+				dataSet1.time.hour = Convert_numberASCIItoDATA(fifoTime.data);
+				clearFIFO_0();
 				clearUART0_mailbox();
+				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
 			if(data.flagMin){
-				dataSet1.time.minutes = Convert_numberASCIItoDATA(tmpMin);
+				fifoTime = popFIFO_0();
+				dataSet1.time.minutes = Convert_numberASCIItoDATA(fifoTime.data);
+				clearFIFO_0();
 				clearUART0_mailbox();
+				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
 			if(data.flagSec){
-				dataSet1.time.seconds = Convert_numberASCIItoDATA(tmpSec);
+				fifoTime = popFIFO_0();
+				dataSet1.time.seconds = Convert_numberASCIItoDATA(fifoTime.data);
 				dataSet1.phaseState = 1;
+				clearFIFO_0();
 				clearUART0_mailbox();
 			}
 		}
@@ -294,14 +301,8 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		}
 		/****************Set Hour***************************/
 		if((counterHour < 2) && (TRUE == data.flagHour)){
-			if(counterHour == 0){
-				tmpHour[counterHour] = getUART0_mailBox();
-				counterHour++;
-			}
-			if(counterHour == 1){
-				tmpHour[counterHour] = getUART0_mailBox();
-				counterHour++;
-			}
+			pushFIFO_0(getUART0_mailBox());
+			counterHour++;
 		}
 
 		if((counterHour == 2) && (TRUE == data.flagHour)){
@@ -309,14 +310,8 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		}
 		/****************Set Minutes***********************/
 		if((counterMin < 2) && (TRUE == data.flagMin)){
-			if(counterMin == 0){
-				tmpMin[counterMin] = getUART0_mailBox();
-				counterMin++;
-			}
-			if(counterMin == 1){
-				tmpMin[counterMin] = getUART0_mailBox();
-				counterMin++;
-			}
+			pushFIFO_0(getUART0_mailBox());
+			counterMin++;
 		}
 
 		if((counterMin == 2) && (TRUE == data.flagMin)){
@@ -324,14 +319,8 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		}
 		/******************Set Seconds*********************/
 		if((counterSec < 2) && (TRUE == data.flagSec)){
-			if(counterSec == 0){
-				tmpMin[counterSec] = getUART0_mailBox();
-				counterSec++;
-			}
-			if(counterSec == 1){
-				tmpMin[counterSec] = getUART0_mailBox();
-				counterSec++;
-			}
+			pushFIFO_0(getUART0_mailBox());
+			counterMin++;
 		}
 
 		if((counterSec == 2) && (TRUE == data.flagSec)){
@@ -341,16 +330,24 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 		if(getUART0_mailBox() == CR){
 
 			if(data.flagHour){
-				dataSet1.time.hour = Convert_numberASCIItoDATA(tmpHour);
+				fifoTime = popFIFO_0();
+				dataSet1.time.hour = Convert_numberASCIItoDATA(fifoTime.data);
+				clearFIFO_0();
 				clearUART0_mailbox();
+				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
 			if(data.flagMin){
-				dataSet1.time.minutes = Convert_numberASCIItoDATA(tmpMin);
+				fifoTime = popFIFO_0();
+				dataSet1.time.minutes = Convert_numberASCIItoDATA(fifoTime.data);
+				clearFIFO_0();
 				clearUART0_mailbox();
+				UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 			}
 			if(data.flagHour){
-				dataSet1.time.seconds = Convert_numberASCIItoDATA(tmpSec);
+				fifoTime = popFIFO_0();
+				dataSet1.time.seconds = Convert_numberASCIItoDATA(fifoTime.data);
 				dataSet1.phaseState = 1;
+				clearFIFO_0();
 				clearUART0_mailbox();
 			}
 		}
@@ -360,13 +357,111 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	return (dataSet1);
 }
 
-StateSetHour_Type stateSave(StateSetHour_Type data){
+StateSetHour_Type stateSaveTime(StateSetHour_Type data){
 
 	static StateSetHour_Type dataSet2;
 
+	//Function to pass the data to the RTC
+
+	dataSet2.stateMain = SET_HOUR;
+	dataSet2.phaseState = 2;
 
 	return (dataSet2);
 }
+
+StateSetHour_Type stateFinalSetHour(StateSetHour_Type data){
+
+	static StateSetHour_Type dataSet3;
+
+	dataSet3.stateMain = MENU;
+	return (dataSet3);
+}
+/**************************************************************/
+StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
+
+	static StateSetDate_Type dataSetDate1;
+	static uint32 counterYear = 0;
+	static uint32 counterMonth = 0;
+	static uint32 counterDay = 0;
+	static FIFO_Type fifoTime;
+
+	if(getUART0_mailBox() != CR){
+		/**Sends to the PCA the received data in the mailbox*/
+		UART_putChar(UART_0, getUART0_mailBox());
+	}
+	/****************Set Year***************************/
+	if((counterYear < 2) && (TRUE == data.flagYear)){
+		pushFIFO_0(getUART0_mailBox());
+		counterYear++;
+	}
+	if((counterYear == 2) && (TRUE == data.flagYear)){
+		counterYear = 0;
+	}
+	/****************Set Month***********************/
+	if((counterMonth < 2) && (TRUE == data.flagMonth)){
+		pushFIFO_0(getUART0_mailBox());
+		counterMonth++;
+	}
+	if((counterMonth == 2) && (TRUE == data.flagMonth)){
+		counterMonth = 0;
+	}
+	/******************Set Days*********************/
+	if((counterDay < 2) && (TRUE == data.flagDay)){
+		pushFIFO_0(getUART0_mailBox());
+		counterDay++;
+	}
+	if((counterDay == 2) && (TRUE == data.flagDay)){
+		counterDay = 0;
+	}
+	/******************Detector CR********************/
+	if(getUART0_mailBox() == CR){
+		if(data.flagYear){
+			fifoTime = popFIFO_0();
+			dataSetDate1.time.year = Convert_numberASCIItoDATA(fifoTime.data);
+			clearFIFO_0();
+			clearUART0_mailbox();
+			UART_putChar(UART_0, ASCII_DIAG);
+		}
+		if(data.flagMonth){
+			fifoTime = popFIFO_0();
+			dataSetDate1.time.month = Convert_numberASCIItoDATA(fifoTime.data);
+			clearFIFO_0();
+			clearUART0_mailbox();
+			UART_putChar(UART_0, ASCII_DIAG);
+		}
+		if(data.flagDay){
+			fifoTime = popFIFO_0();
+			dataSetDate1.time.day = Convert_numberASCIItoDATA(fifoTime.data);
+			dataSetDate1.phaseState = 1;
+			clearFIFO_0();
+			clearUART0_mailbox();
+		}
+	}
+
+	dataSetDate1.stateMain = SET_DATE;
+	return (dataSetDate1);
+}
+
+StateSetDate_Type stateSaveDate(StateSetDate_Type data){
+
+	static StateSetDate_Type dataSetDate2;
+
+	//Function to pass the data to the RTC
+
+	dataSetDate2.stateMain = SET_DATE;
+	dataSetDate2.phaseState = 2;
+
+	return (dataSetDate2);
+}
+
+StateSetDate_Type stateFinalSetDate(StateSetDate_Type data){
+
+	static StateSetDate_Type dataSetDate3;
+
+	dataSetDate3.stateMain = MENU;
+	return (dataSetDate3);
+}
+
 
 /********************************************************/
 /********************************************************/
@@ -434,6 +529,10 @@ States_MenuType stateRead(){
 		readFunctions = statesReadI2C[phase].StateReadI2C;
 		stateRead = readFunctions(stateRead);
 
+		if(phase == 3){
+			stateRead.phaseState = 0;
+			flagUART0 = FALSE;
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
@@ -470,6 +569,10 @@ States_MenuType stateWrite(){
 		writeFunctions = statesWriteI2C[phase].StateWriteI2C;
 		stateWrite = writeFunctions(stateWrite);
 
+		if(phase == 3){
+			stateWrite.phaseState = 0;
+			flagUART0 = FALSE;
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
@@ -500,6 +603,10 @@ States_MenuType stateSetHour(){
 		setHourFunctions = statesSetHour[phase].StateSetHour;
 		state_SetHour = setHourFunctions(state_SetHour);
 
+		if(phase == 2){
+			state_SetHour.phaseState = 0;
+			flagUART0 = FALSE;
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
@@ -509,17 +616,35 @@ States_MenuType stateSetHour(){
 
 States_MenuType stateSetDate(){
 
-	States_MenuType state = SET_DATE;
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateSetDate_Type state_SetDate;
+	static StateSetDate_Type dataMemory_SetDate;
+	StateSetDate_Type(*setDateFunctions)(StateSetDate_Type);
+	state_SetDate.stateMain = WRITE;
+
+	if(FALSE == flagUART0){
+		flagUART0 = menu_SetDate(phase);
+	}
+	if(phase == 1){
+		dataMemory_SetDate.time = state_SetDate.time;
+		setDateFunctions = statesSetDate[phase].StateSetDate;
+		state_SetDate = setDateFunctions(dataMemory_SetDate);
+	}
 
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		setDateFunctions = statesSetDate[phase].StateSetDate;
+		state_SetDate = setDateFunctions(state_SetDate);
 
+		if(phase == 2){
+			state_SetDate.phaseState = 0;
+			flagUART0 = FALSE;
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
-	return state;
+	phase = state_SetDate.phaseState;
+	return (state_SetDate.stateMain);
 }
 
 States_MenuType stateFormat(){

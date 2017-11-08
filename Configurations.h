@@ -110,18 +110,40 @@ typedef const struct StateSetHour{
 	StateSetHour_Type(*StateSetHour)(StateSetHour_Type);
 }StatePtrSetHour_Type;
 ////////////////////////////////////////////////////
+typedef struct{
+	uint32 phaseState;
+	States_MenuType stateMain;
+	Date_Type time;
+	uint32 flagYear : 1;
+	uint32 flagMonth  : 1;
+	uint32 flagDay  : 1;
+}StateSetDate_Type;
+
+typedef StateSetDate_Type(*fptrStateSetDate)(StateSetDate_Type);
+
+typedef const struct StateSetDate{
+	StateSetDate_Type(*StateSetDate)(StateSetDate_Type);
+}StatePtrSetDate_Type;
+/////////////////////////////////////////////////////
+
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
 StateReadI2C_Type stateLenght(StateReadI2C_Type data);
 StateReadI2C_Type stateData(StateReadI2C_Type data);
-StateReadI2C_Type stateFinal(StateReadI2C_Type data);
+StateReadI2C_Type stateFinalReadI2C(StateReadI2C_Type data);
 
 StateWriteI2C_Type stateAddressWrite(StateWriteI2C_Type data);
 StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data);
 StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data);
+StateWriteI2C_Type stateFinalWriteI2C(StateWriteI2C_Type data);
 
 StateSetHour_Type stateSetTime(StateSetHour_Type data);
-StateSetHour_Type stateSave(StateSetHour_Type data);
+StateSetHour_Type stateSaveTime(StateSetHour_Type data);
+StateSetHour_Type stateFinalSetHour(StateSetHour_Type data);
+
+StateSetDate_Type stateSetCalendar(StateSetDate_Type data);
+StateSetDate_Type stateSaveDate(StateSetDate_Type data);
+StateSetDate_Type stateFinalSetDate(StateSetDate_Type data);
 
 States_MenuType stateMenu();
 States_MenuType stateRead();

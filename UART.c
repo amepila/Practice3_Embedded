@@ -237,7 +237,7 @@ uint32 Convert_numberASCIItoDATA(uint8 *string){
 	uint32 tmpData2 = 0;
 	uint32 expValue;
 
-	while(string[counter1] != CR){
+	while((string[counter1] != CR) || (string[counter1] != '\0')){
 		counter1++;
 	}
 

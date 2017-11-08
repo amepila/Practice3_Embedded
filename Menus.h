@@ -15,11 +15,11 @@
 
 
 typedef struct{
-	uint8 flag1 : 1;
-	uint8 flag2 : 1;
-	uint8 flag3 : 1;
-	uint8 flag4 : 1;
-	uint8 flag5 : 1;
+	uint32 flag1 : 1;
+	uint32 flag2 : 1;
+	uint32 flag3 : 1;
+	uint32 flag4 : 1;
+	uint32 flag5 : 1;
 }Flags_Type;
 
 uint8 menu_Main(void);

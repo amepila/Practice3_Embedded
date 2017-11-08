@@ -125,7 +125,6 @@ uint8 menu_WriteI2C(uint8 phase){
 		}
 		return FALSE;
 	}
-
 	if(phase ==  2){
 		if(FALSE == flagContinue.flag3){
 			UART_putString(UART_0,"\033[13;10H");
@@ -147,46 +146,71 @@ uint8 menu_SetHour(uint8 phase){
 	 * is coded with terminal code*/
 
 	if(phase == 0){
-		/*VT100 command for clearing the screen*/
-		UART_putString(UART_0,"\033[2J");
-		/** VT100 command for positioning the cursor in x and y position*/
-		UART_putString(UART_0,"\033[10;10H");
-		UART_putString(UART_0, "Escribir hora en hh/mm/ss:\t");
+		if(FALSE == flagContinue.flag1){
+
+			/*VT100 command for clearing the screen*/
+			UART_putString(UART_0,"\033[2J");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[10;10H");
+			UART_putString(UART_0, "Escribir hora en hh/mm/ss:\t");
+
+			flagContinue.flag1 = TRUE;
+		}
+		return FALSE;
 	}
 
+	if(phase == 1){
+		if(FALSE == flagContinue.flag2){
+			UART_putString(UART_0,"\033[11;10H");
+			UART_putString(UART_0, "La hora ha sido cambiada...: \r");
 
-	UART_putString(UART_0,"\033[11;10H");
-	UART_putString(UART_0, "La hora ha sido cambiada...: \r");
-	//UART_putString(UART_0, &data.lenght);
-	UART_putString(UART_0,"\r");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[20;10H");
 
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[20;10H");
-
-	return TRUE;
+			flagContinue.flag2 = TRUE;
+		}
+		return FALSE;
+	}
+	if(phase == 2){
+		return FALSE;
+	}
 }
 
 uint8 menu_SetDate(uint8 phase){
+
+	static Flags_Type flagContinue;
+
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
-	/*VT100 command for clearing the screen*/
-	UART_putString(UART_0,"\033[2J");
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[10;10H");
-	UART_putString(UART_0, "Escribir fecha: en dd/mm/aa:\t");
-	//UART_putString(UART_0, &data.addressRead);
-	UART_putString(UART_0,"\r");
+	if(phase == 0){
+		if(FALSE == flagContinue.flag1){
+			/*VT100 command for clearing the screen*/
+			UART_putString(UART_0,"\033[2J");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[10;10H");
+			UART_putString(UART_0, "Escribir fecha: en dd/mm/aa:\t");
 
-	UART_putString(UART_0,"\033[11;10H");
-	UART_putString(UART_0, "La hora ha sido cambiada: \r");
-	//UART_putString(UART_0, &data.lenght);
-	UART_putString(UART_0,"\r");
+			flagContinue.flag1 = TRUE;
+		}
+		return FALSE;
+	}
 
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[20;10H");
+	if(phase == 1){
+		if(FALSE == flagContinue.flag2){
+			UART_putString(UART_0,"\033[11;10H");
+			UART_putString(UART_0, "La hora ha sido cambiada: \r");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[20;10H");
 
-	return TRUE;
+			flagContinue.flag2 = TRUE;
+		}
+		return FALSE;
+	}
+
+	if(phase ==  2){
+		return FALSE;
+	}
 }
 
 uint8 menu_FormatHour(uint8 phase){
