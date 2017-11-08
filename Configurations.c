@@ -163,7 +163,7 @@ StateWriteI2C_Type stateAddressWrite(StateWriteI2C_Type data){
 		dataWrite1.inputAddress[counterWrite1 - 2] = getUART0_mailBox();
 	}
 	counterWrite1++;
-
+	dataWrite1.phaseState = 0;
 	if(getUART0_mailBox() == CR){
 
 		dataWrite1.realAddress = Convert_numberASCIItoDATA(dataWrite1.inputAddress);
@@ -188,6 +188,7 @@ StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data){
 
 	dataWrite2.inputData[counterWrite2] = getUART0_mailBox();
 	counterWrite2++;
+	dataWrite2.phaseState = 1;
 
 	if(getUART0_mailBox() == CR){
 
@@ -203,18 +204,15 @@ StateWriteI2C_Type stateDataWrite(StateWriteI2C_Type data){
 StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data){
 
 	static StateWriteI2C_Type dataWrite3;
-	uint32 counterChar = 0;
 	uint32 counterSave;
 	uint32 counterAddress = 0;
 
-	while(data.inputData[counterChar] != CR){
-		counterChar++;
-	}
 
-	for(counterSave = counterChar; counterSave != 0; counterSave--){
+	for(counterSave = data.sizeData; counterSave != 0; counterSave--){
 		//Function to write in memory in I2C
 		counterAddress++;
 	}
+	dataWrite3.phaseState = 3;
 	dataWrite3.stateMain = WRITE;
 
 	return (dataWrite3);
@@ -558,6 +556,7 @@ States_MenuType stateWrite(Time_Type realTime){
 	static uint32 flagUART0 = FALSE;
 	static StateWriteI2C_Type stateWrite;
 	static StateWriteI2C_Type dataMemoryWrite;
+	static uint32 flagAddress;
 	StateWriteI2C_Type(*writeFunctions)(StateWriteI2C_Type);
 	stateWrite.stateMain = WRITE;
 	uint32 counterChar;
@@ -566,7 +565,11 @@ States_MenuType stateWrite(Time_Type realTime){
 		flagUART0 = menu_WriteI2C(phase);
 	}
 
-	if(phase == 1){	dataMemoryWrite.realAddress = stateWrite.realAddress;}
+	if(phase == 1){
+		if(FALSE == flagAddress){
+			dataMemoryWrite.realAddress = stateWrite.realAddress;}
+			flagAddress = TRUE;
+		}
 	if(phase == 2){
 		dataMemoryWrite.sizeData = stateWrite.sizeData;
 		for(counterChar = 0; counterChar < dataMemoryWrite.sizeData; counterChar++){

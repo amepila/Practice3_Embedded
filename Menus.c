@@ -117,7 +117,6 @@ uint8 menu_WriteI2C(uint8 phase){
 
 			flagContinue.flag1 = TRUE;
 		}
-		flagContinue.flag2 = FALSE;
 		return FALSE;
 	}
 
@@ -140,10 +139,14 @@ uint8 menu_WriteI2C(uint8 phase){
 
 			flagContinue.flag3 = TRUE;
 		}
-		flagContinue.flag1 = FALSE;
-		flagContinue.flag2 = FALSE;
+
 
 		return FALSE;
+	}
+	if(phase == 3){
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
+		flagContinue.flag3 = FALSE;
 	}
 }
 
