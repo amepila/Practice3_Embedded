@@ -104,9 +104,12 @@ int main(void){
 	unsigned char modeMCG = 0;
 	mcg_clk_hz = pll_init(CLK_FREQ_HZ, LOW_POWER, EXTERNAL_CLOCK, PLL0_PRDIV, PLL0_VDIV, PLL_ENABLE);
 
+	/**General variables**/
+	Time_Type realTimeClock;
+
 	/**First state in the program**/
   	States_MenuType currentState = MENU;
-	States_MenuType(*mainFunctions)(void);
+	States_MenuType(*mainFunctions)(Time_Type);
 
 	/**Configurations of devices**/
 	SPI_init(&SPI_Config);
@@ -133,9 +136,11 @@ int main(void){
 	EnableInterrupts;
 
     while(1){
+
+
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;
-    	currentState = mainFunctions();
+    	currentState = mainFunctions(realTimeClock);
     }
     return 0;
 }

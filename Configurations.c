@@ -79,6 +79,7 @@ StateReadI2C_Type stateAddress(StateReadI2C_Type data){
 	}
 	counter1++;
 
+	dataState1.phaseState = 0;
 	if(getUART0_mailBox() == CR){
 
 		dataState1.realAddress = Convert_numberASCIItoDATA(dataState1.inputAddress);
@@ -103,6 +104,7 @@ StateReadI2C_Type stateLenght(StateReadI2C_Type data){
 	dataState2.inputLenght[counter2] = getUART0_mailBox();
 	counter2++;
 
+	dataState2.phaseState = 1;
 	if(getUART0_mailBox() == CR){
 
 		dataState2.realLenght = Convert_numberASCIItoDATA(dataState2.inputLenght);
@@ -129,6 +131,7 @@ StateReadI2C_Type stateData(StateReadI2C_Type data){
 	//Function to decode the data
 
 	//UART_putString(UART_0, &data);
+	UART_putString(UART_0, "Hola mundo\t");
 
 	dataState3.phaseState = 3;
 	dataState3.stateMain = READ;
@@ -465,7 +468,7 @@ StateSetDate_Type stateFinalSetDate(StateSetDate_Type data){
 
 /********************************************************/
 /********************************************************/
-States_MenuType stateMenu(){
+States_MenuType stateMenu(Time_Type realTime){
 
 	States_MenuType state = MENU;
 	static uint32 flagUART0 = FALSE;
@@ -474,8 +477,11 @@ States_MenuType stateMenu(){
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		if(getUART0_mailBox() != CR){
+			/**Sends to the PCA the received data in the mailbox*/
+			UART_putChar(UART_0, getUART0_mailBox());
+		}
+
 		/**Saves the input data in an array of 2 spaces**/
 		pushFIFO_0(getUART0_mailBox());
 
@@ -505,12 +511,13 @@ States_MenuType stateMenu(){
 	return (state);
 }
 
-States_MenuType stateRead(){
+States_MenuType stateRead(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
 	static StateReadI2C_Type stateRead;
 	static StateReadI2C_Type dataMemory;
+	static uint32 flagAddress;
 	StateReadI2C_Type(*readFunctions)(StateReadI2C_Type);
 	stateRead.stateMain = READ;
 
@@ -518,13 +525,17 @@ States_MenuType stateRead(){
 		flagUART0 = menu_ReadI2C(phase);
 	}
 
-	if(phase == 1){ dataMemory.realAddress = stateRead.realAddress;}
+	if(phase == 1){
+		if(FALSE == flagAddress){
+			dataMemory.realAddress = stateRead.realAddress;
+			flagAddress = TRUE;
+		}
+	}
 	if(phase == 2){
 		dataMemory.realLenght = stateRead.realLenght;
 		readFunctions = statesReadI2C[phase].StateReadI2C;
 		stateRead = readFunctions(dataMemory);
 	}
-
 	if(getUART0_flag()){
 		readFunctions = statesReadI2C[phase].StateReadI2C;
 		stateRead = readFunctions(stateRead);
@@ -541,7 +552,7 @@ States_MenuType stateRead(){
 	return (stateRead.stateMain);
 }
 
-States_MenuType stateWrite(){
+States_MenuType stateWrite(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
@@ -581,7 +592,7 @@ States_MenuType stateWrite(){
 	return (stateWrite.stateMain);
 }
 
-States_MenuType stateSetHour(){
+States_MenuType stateSetHour(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
@@ -614,7 +625,7 @@ States_MenuType stateSetHour(){
 	return (state_SetHour.stateMain);
 }
 
-States_MenuType stateSetDate(){
+States_MenuType stateSetDate(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
@@ -647,7 +658,7 @@ States_MenuType stateSetDate(){
 	return (state_SetDate.stateMain);
 }
 
-States_MenuType stateFormat(){
+States_MenuType stateFormat(Time_Type realTime){
 
 	States_MenuType state = FORMAT;
 
@@ -662,7 +673,7 @@ States_MenuType stateFormat(){
 	return state;
 }
 
-States_MenuType stateReadHour(){
+States_MenuType stateReadHour(Time_Type realTime){
 
 	States_MenuType state = READ_HOUR;
 
@@ -677,7 +688,7 @@ States_MenuType stateReadHour(){
 	return state;
 }
 
-States_MenuType stateReadDate(){
+States_MenuType stateReadDate(Time_Type realTime){
 
 	States_MenuType state = READ_DATE;
 
@@ -692,7 +703,7 @@ States_MenuType stateReadDate(){
 	return state;
 }
 
-States_MenuType stateTerminal2(){
+States_MenuType stateTerminal2(Time_Type realTime){
 
 	States_MenuType state = TERMINAL2;
 
@@ -707,7 +718,7 @@ States_MenuType stateTerminal2(){
 	return state;
 }
 
-States_MenuType stateEco(){
+States_MenuType stateEco(Time_Type realTime){
 
 	States_MenuType state = ECO;
 

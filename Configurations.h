@@ -29,16 +29,6 @@ typedef enum{
 	ECO
 }States_MenuType;
 
-/*Data type to main functions*/
-typedef States_MenuType(*fptrState)(uint32);
-
-/**Data type to machine state**/
-typedef const struct State{
-	States_MenuType (*stateFunction)(void);
-}StateType;
-
-typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
-
 typedef struct{
 	uint32	hour;
 	uint32	minutes;
@@ -50,6 +40,21 @@ typedef struct{
 	uint32	month;
 	uint32	day;
 }Date_Type;
+
+typedef struct{
+	Hour_Type hour;
+	Date_Type date;
+}Time_Type;
+
+/*Data type to main functions*/
+typedef States_MenuType(*fptrState)(Time_Type);
+
+/**Data type to machine state**/
+typedef const struct State{
+	States_MenuType (*stateFunction)(Time_Type);
+}StateType;
+
+typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
 
 typedef struct{
 	uint32	addressWrite;
@@ -145,16 +150,16 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data);
 StateSetDate_Type stateSaveDate(StateSetDate_Type data);
 StateSetDate_Type stateFinalSetDate(StateSetDate_Type data);
 
-States_MenuType stateMenu();
-States_MenuType stateRead();
-States_MenuType stateWrite();
-States_MenuType stateSetHour();
-States_MenuType stateSetDate();
-States_MenuType stateFormat();
-States_MenuType stateReadHour();
-States_MenuType stateReadDate();
-States_MenuType stateTerminal2();
-States_MenuType stateEco();
+States_MenuType stateMenu(Time_Type realTime);
+States_MenuType stateRead(Time_Type realTime);
+States_MenuType stateWrite(Time_Type realTime);
+States_MenuType stateSetHour(Time_Type realTime);
+States_MenuType stateSetDate(Time_Type realTime);
+States_MenuType stateFormat(Time_Type realTime);
+States_MenuType stateReadHour(Time_Type realTime);
+States_MenuType stateReadDate(Time_Type realTime);
+States_MenuType stateTerminal2(Time_Type realTime);
+States_MenuType stateEco(Time_Type realTime);
 
 
 

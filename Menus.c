@@ -58,6 +58,7 @@ uint8 menu_ReadI2C(uint8 phase){
 
 			flagContinue.flag1 = TRUE;
 		}
+		flagContinue.flag4 = FALSE;
 		return FALSE;
 	}
 
@@ -84,12 +85,16 @@ uint8 menu_ReadI2C(uint8 phase){
 
 
 	if(phase == 3){
-		if(FALSE  == flagContinue.flag3){
+		if(FALSE  == flagContinue.flag4){
 			UART_putString(UART_0,"\033[16;10H");
 			UART_putString(UART_0, "Presione una tecla para continuar....\r");
 
-			flagContinue.flag3 = TRUE;
+			flagContinue.flag4 = TRUE;
 		}
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
+		flagContinue.flag3 = FALSE;
+
 		return FALSE;
 	}
 }
@@ -112,6 +117,7 @@ uint8 menu_WriteI2C(uint8 phase){
 
 			flagContinue.flag1 = TRUE;
 		}
+		flagContinue.flag2 = FALSE;
 		return FALSE;
 	}
 
@@ -134,6 +140,9 @@ uint8 menu_WriteI2C(uint8 phase){
 
 			flagContinue.flag3 = TRUE;
 		}
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
+
 		return FALSE;
 	}
 }
@@ -172,6 +181,9 @@ uint8 menu_SetHour(uint8 phase){
 		return FALSE;
 	}
 	if(phase == 2){
+
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
 		return FALSE;
 	}
 }
@@ -209,38 +221,74 @@ uint8 menu_SetDate(uint8 phase){
 	}
 
 	if(phase ==  2){
+
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
 		return FALSE;
 	}
 }
 
 uint8 menu_FormatHour(uint8 phase){
+
+	static Flags_Type flagContinue;
+
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
-	/*VT100 command for clearing the screen*/
-	UART_putString(UART_0,"\033[2J");
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[10;10H");
-	UART_putString(UART_0, "El formato de hora actual es:\t");
-	//UART_putString(UART_0, &data.addressRead);
-	UART_putString(UART_0,"\r");
+	if(phase == 0){
+		if(FALSE == flagContinue.flag1){
+			/*VT100 command for clearing the screen*/
+			UART_putString(UART_0,"\033[2J");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[10;10H");
+			UART_putString(UART_0, "El formato de hora actual es:\t");
 
-	UART_putString(UART_0,"\033[11;10H");
-	UART_putString(UART_0, "Desea cambiar el formato a \t");
-	//UART_putString(UART_0, &data.lenght);
-	UART_putString(UART_0,"si/no?\t");
-	UART_putString(UART_0,"\r");
+			flagContinue.flag1 = TRUE;
+		}
+		return FALSE;
+	}
 
+	if(phase == 1){
+		if(FALSE == flagContinue.flag2){
+			UART_putString(UART_0,"\033[11;10H");
+			UART_putString(UART_0, "Desea cambiar el formato a \t");
 
-	UART_putString(UART_0,"\033[12;10H");
-	UART_putString(UART_0, "El formato de la hora ha sido cambiado\r");
-	//UART_putString(UART_0, &data.dataOut);
-	UART_putString(UART_0,"\r");
+			flagContinue.flag2 = TRUE;
+		}
+		return FALSE;
+	}
 
-	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_0,"\033[20;10H");
+	if(phase == 2){
+		if(FALSE == flagContinue.flag3){
+			UART_putString(UART_0,"si/no?\t");
 
-	return TRUE;
+			flagContinue.flag3 = TRUE;
+		}
+		return FALSE;
+	}
+
+	if(phase == 3){
+		if(FALSE == flagContinue.flag4){
+			UART_putString(UART_0,"\033[12;10H");
+			UART_putString(UART_0, "El formato de la hora ha sido cambiado\r");
+
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[20;10H");
+
+			flagContinue.flag4 = TRUE;
+		}
+		return FALSE;
+	}
+
+	if(phase == 4){
+
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
+		flagContinue.flag3 = FALSE;
+		flagContinue.flag4 = FALSE;
+		return FALSE;
+	}
+
 }
 
 uint8 menu_ReadHour(uint8 phase){

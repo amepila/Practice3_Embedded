@@ -237,7 +237,7 @@ uint32 Convert_numberASCIItoDATA(uint8 *string){
 	uint32 tmpData2 = 0;
 	uint32 expValue;
 
-	while((string[counter1] != CR) || (string[counter1] != '\0')){
+	while(string[counter1] != CR){
 		counter1++;
 	}
 
@@ -274,6 +274,7 @@ FIFO_Type popFIFO_0(void){
 
 	uint32 counterSize = 0;
 	uint32 position = 0;
+	uint32 counterClear;
 	static uint32 counterChar;
 	FIFO_Type fifo;
 
@@ -281,12 +282,18 @@ FIFO_Type popFIFO_0(void){
 		counterSize++;
 	}
 
+	for(counterClear = 0; counterClear < 50; counterClear++){
+		fifo.data[counterClear] = '\0';
+	}
+
 	for(counterChar = counterSize; counterChar != 0; counterChar--){
 		fifo.data[position] = FIFO_UART0.data[position];
 		position++;
+
 	}
+
 	fifo.size = counterSize;
-	fifo.stateFIFO = EMPTY;
+	fifo.stateFIFO = NORMAL;
 	return (fifo);
 }
 
