@@ -240,6 +240,7 @@ uint8 menu_FormatHour(uint8 phase){
 
 	if(phase == 0){
 		if(FALSE == flagContinue.flag1){
+			flagContinue.flag4 = FALSE;
 			/*VT100 command for clearing the screen*/
 			UART_putString(UART_0,"\033[2J");
 			/** VT100 command for positioning the cursor in x and y position*/
@@ -280,18 +281,11 @@ uint8 menu_FormatHour(uint8 phase){
 
 			flagContinue.flag4 = TRUE;
 		}
-		return FALSE;
-	}
-
-	if(phase == 4){
-
 		flagContinue.flag1 = FALSE;
 		flagContinue.flag2 = FALSE;
 		flagContinue.flag3 = FALSE;
-		flagContinue.flag4 = FALSE;
 		return FALSE;
 	}
-
 }
 
 uint8 menu_ReadHour(uint8 phase){

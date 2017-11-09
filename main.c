@@ -106,7 +106,7 @@ int main(void){
 
 	/**General variables**/
 	Time_Type realTimeClock;
-	realTimeClock.hour.format = FORMAT_12H;
+	realTimeClock.hour.format = FORMAT_24H;
 
 	/**First state in the program**/
   	States_MenuType currentState = MENU;

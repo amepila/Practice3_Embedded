@@ -527,12 +527,13 @@ StateFormat_Type stateShowFormat(StateFormat_Type data){
 
 	if(FORMAT_12H == data.format){
 		UART_putString(UART_0,"12h");
+		dataFormat1.format = FORMAT_12H;
 	}
 	if(FORMAT_24H == data.format){
 		UART_putString(UART_0,"24h");
+		dataFormat1.format = FORMAT_24H;
 	}
 
-	dataFormat1.format = FORMAT_12H;
 	dataFormat1.stateMain = FORMAT;
 	dataFormat1.phaseState = 1;
 
@@ -544,10 +545,10 @@ StateFormat_Type stateChange(StateFormat_Type data){
 	static StateFormat_Type dataFormat2;
 
 	if(FORMAT_12H == data.format){
-		UART_putString(UART_0,"24h");
+		UART_putString(UART_0,"24h ");
 	}
 	if(FORMAT_24H == data.format){
-		UART_putString(UART_0,"12h");
+		UART_putString(UART_0,"12h ");
 	}
 
 	dataFormat2.format = FORMAT_12H;
@@ -561,7 +562,8 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 
 	static StateFormat_Type dataFormat3;
 	static FIFO_Type fifo;
-	static uint32 counterChar = 0;
+	static uint32 counterYes = 0;
+	static uint32 counterNo = 0;
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -575,24 +577,43 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 		fifo =  popFIFO_0();
 
 		if(('S' == fifo.data[0]) || ('s' == fifo.data[0])){
-			counterChar++;
+			counterYes++;
 		}
 		if(('I' == fifo.data[1]) || ('i' == fifo.data[1])){
-			counterChar++;
+			counterYes++;
 		}
 		if(('N' == fifo.data[0]) || ('n' == fifo.data[0])){
-			counterChar++;
+			counterNo++;
 		}
 		if(('O' == fifo.data[1]) || ('o' == fifo.data[1])){
-			counterChar++;
+			counterNo++;
 		}
 
 		dataFormat3.phaseState = 3;
 	}
 
-	if(counterChar == 2){
-		counterChar = 0;
+	if(counterYes == 2){
+		counterYes = 0;
+		counterNo = 0;
 		clearFIFO_0();
+
+		if(FORMAT_12H == data.format){
+			//Function
+
+		}else{
+			//Function
+		}
+	}
+	if(counterNo == 2){
+		counterYes = 0;
+		counterNo = 0;
+		clearFIFO_0();
+
+		if(FORMAT_12H == data.format){
+			//Function
+		}else{
+			//Function
+		}
 	}
 
 	dataFormat3.stateMain = FORMAT;
