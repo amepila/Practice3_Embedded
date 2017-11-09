@@ -13,6 +13,9 @@
 #include "Buttons.h"
 #include "SPI.h"
 #include "GPIO.h"
+#include "I2C.h"
+#include "I2CE2PROM.h"
+#include "RTC.h"
 #include "UART.h"
 
 /*Data type to States of the program*/

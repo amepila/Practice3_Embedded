@@ -13,7 +13,6 @@
 #include "NVIC.h"
 #include "Buttons.h"
 #include "MCG.h"
-#include "I2C.h"
 #include "UART.h"
 #include "Menus.h"
 #include "Configurations.h"
@@ -117,6 +116,8 @@ int main(void){
 	LCDNokia_init();
 	LCDNokia_clear();
 	Buttons_init(Buttons_Config);
+	I2C_init(I2C_0, 30000000, 100000);
+
 
 	/***Interruptions Configurations***/
 	/**Set the reference priority **/

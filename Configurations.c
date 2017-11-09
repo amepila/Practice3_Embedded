@@ -138,18 +138,12 @@ StateReadI2C_Type stateLenght(StateReadI2C_Type data){
 StateReadI2C_Type stateData(StateReadI2C_Type data){
 
 	static StateReadI2C_Type dataState3;
+	uint32 counterChar;
 
-	//uint8 data[5] = {'h', 'o', 'l', 'a'};
-
-	/**IMPORTANT PART**/
-	//Function to extract from memory
-	//Print the data
-	//Put the function to allocate with address and lenght
-	//data.AddressRead and data.lenght
-	//Function to decode the data
-
-	//UART_putString(UART_0, &data);
-	UART_putString(UART_0, "Hola mundo\t");
+	for(counterChar = 0; counterChar < data.realLenght; counterChar++){
+		UART_putChar(UART_0,readMemory((data.realAddress + counterChar)));
+		E2PROMdelay(65000);
+	}
 
 	dataState3.phaseState = 3;
 	dataState3.stateMain = READ;
@@ -225,10 +219,11 @@ StateWriteI2C_Type stateFinalWrite(StateWriteI2C_Type data){
 	uint32 counterSave;
 	uint32 counterAddress = 0;
 
-
 	for(counterSave = data.sizeData; counterSave != 0; counterSave--){
-		//Function to write in memory in I2C
+		writeMemory((data.realAddress + counterAddress),data.inputData[counterAddress]);
 		counterAddress++;
+		E2PROMdelay(65000);
+
 	}
 	dataWrite3.phaseState = 3;
 	dataWrite3.stateMain = WRITE;
@@ -632,17 +627,56 @@ StateFormat_Type stateFinalFormat(StateFormat_Type data){
 /**********************************************************/
 StateReadHour_Type stateReadTime(StateReadHour_Type data){
 
+	static StateReadHour_Type dataReadTime1;
+
+
+	if(getUART0_mailBox() != CR){
+
+		UART_putString(UART_0,"06:40:34");
+
+		dataReadTime1.phaseState = 0;
+	}
+	if(getUART0_mailBox() == CR){
+		dataReadTime1.phaseState = 0;
+	}
+
+	dataReadTime1.stateMain = READ_HOUR;
+	return dataReadTime1;
 }
 
 StateReadHour_Type stateFinalRH(StateReadHour_Type data){
 
+	static StateReadHour_Type dataReadTime2;
+
+	dataReadTime2.stateMain = MENU;
+	return dataReadTime2;
 }
 /**********************************************************/
 StateReadDate_Type stateReadCalendar(StateReadDate_Type data){
 
+	static StateReadDate_Type dataReadCal1;
+
+
+	if(getUART0_mailBox() != CR){
+
+		UART_putString(UART_0,"06:40:34");
+
+		dataReadCal1.phaseState = 0;
+	}
+	if(getUART0_mailBox() == CR){
+		dataReadCal1.phaseState = 0;
+	}
+
+	dataReadCal1.stateMain = READ_HOUR;
+	return dataReadCal1;
 }
 
 StateReadDate_Type stateFinalRD(StateReadDate_Type data){
+
+	static StateReadDate_Type dataReadCal2;
+
+	dataReadCal2.stateMain = MENU;
+	return dataReadCal2;
 
 }
 
@@ -915,35 +949,51 @@ States_MenuType stateReadHour(Time_Type realTime){
 		readHourFunctions = statesReadHour[phase].StateReadHour;
 		stateReadHour = readHourFunctions(stateReadHour);
 	}
-
+	if(phase == 1){
+		stateReadHour.phaseState = 0;
+		flagUART0 = FALSE;
+	}
 	if(getUART0_flag()){
-
 		readHourFunctions = statesReadHour[phase].StateReadHour;
 		stateReadHour = readHourFunctions(stateReadHour);
-
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
 
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
 
+	phase = stateReadHour.phaseState;
 	return (stateReadHour.stateMain);
 }
 
 States_MenuType stateReadDate(Time_Type realTime){
 
-	States_MenuType state = READ_DATE;
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateReadDate_Type stateReadDate;
+	StateReadDate_Type(*readDateFunctions)(StateReadDate_Type);
+	stateReadDate.stateMain = READ_DATE;
 
+	if(FALSE == flagUART0){
+		flagUART0 = menu_ReadDate(phase);
+	}
+	if(phase == 0){
+		readDateFunctions = statesReadDate[phase].StateReadDate;
+		stateReadDate = readDateFunctions(stateReadDate);
+	}
+	if(phase == 1){
+		stateReadDate.phaseState = 0;
+		flagUART0 = FALSE;
+	}
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		readDateFunctions = statesReadDate[phase].StateReadDate;
+		stateReadDate = readDateFunctions(stateReadDate);
 
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
 
-	return state;
+	phase = stateReadDate.phaseState;
+	return (stateReadDate.stateMain);
 }
 
 States_MenuType stateTerminal2(Time_Type realTime){
