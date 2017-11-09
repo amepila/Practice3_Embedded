@@ -212,6 +212,8 @@ States_MenuType stateReadDate(Time_Type realTime);
 States_MenuType stateTerminal2(Time_Type realTime);
 States_MenuType stateEco(Time_Type realTime);
 
+void printHourLCD(Time_Type time);
+
 
 
 #endif /* CONFIGURATIONS_H_ */

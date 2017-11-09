@@ -103,10 +103,6 @@ int main(void){
 	unsigned char modeMCG = 0;
 	mcg_clk_hz = pll_init(CLK_FREQ_HZ, LOW_POWER, EXTERNAL_CLOCK, PLL0_PRDIV, PLL0_VDIV, PLL_ENABLE);
 
-	/**General variables**/
-	Time_Type realTimeClock;
-	realTimeClock.hour.format = FORMAT_24H;
-
 	/**First state in the program**/
   	States_MenuType currentState = MENU;
 	States_MenuType(*mainFunctions)(Time_Type);
@@ -118,6 +114,16 @@ int main(void){
 	Buttons_init(Buttons_Config);
 	I2C_init(I2C_0, 30000000, 100000);
 
+	/**General variables**/
+	Time_Type realTimeClock;
+	realTimeClock.hour.format = FORMAT_24H;
+	realTimeClock.hour.hour = 9;
+	realTimeClock.hour.minutes = 0;
+	realTimeClock.hour.seconds = 0;
+
+	setRTC_sec(realTimeClock.hour.hour);
+	setRTC_min(realTimeClock.hour.minutes);
+	setRTC_hour(realTimeClock.hour.seconds);
 
 	/***Interruptions Configurations***/
 	/**Set the reference priority **/
@@ -138,11 +144,13 @@ int main(void){
 	EnableInterrupts;
 
     while(1){
-
+    	printHourLCD(realTimeClock);
 
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;
     	currentState = mainFunctions(realTimeClock);
+
+    	LCDNokia_clear();
     }
     return 0;
 }

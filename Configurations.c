@@ -1025,3 +1025,21 @@ States_MenuType stateEco(Time_Type realTime){
 
 	return state;
 }
+
+
+void printHourLCD(Time_Type time){
+
+	LCDNokia_gotoXY(15,2);
+	LCDNokia_printValue(BCDHDec(readRTC_hour()));
+	LCDNokia_printValue(BCDUni(readRTC_hour()));
+	LCDNokia_sendChar(58);
+
+	LCDNokia_gotoXY(35,2);
+	LCDNokia_printValue(BCDDec(readRTC_min()));
+	LCDNokia_printValue(BCDUni(readRTC_min()));
+	LCDNokia_sendChar(58);
+
+	LCDNokia_gotoXY(55,2);
+	LCDNokia_printValue(BCDDec(readRTC_sec()));
+	LCDNokia_printValue(BCDUni(readRTC_sec()));
+}
