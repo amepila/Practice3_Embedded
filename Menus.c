@@ -374,8 +374,39 @@ uint8 menu_CommTerminal2(uint8 phase){
 
 uint8 menu_EcoLCD(uint8 phase){
 
+	static Flags_Type flagContinue;
 
-	return TRUE;
+	/**The following sentences send strings to PC using the UART_putString function. Also, the string
+	 * is coded with terminal code*/
+
+	if(phase == 0){
+		if(FALSE == flagContinue.flag1){
+			/*VT100 command for clearing the screen*/
+			UART_putString(UART_0,"\033[2J");
+			/** VT100 command for positioning the cursor in x and y position*/
+			UART_putString(UART_0,"\033[10;10H");
+			UART_putString(UART_0, "Escribir texto 1: \r");
+			UART_putString(UART_0,"\033[11;10H");
+
+			flagContinue.flag1 = TRUE;
+		}
+		return FALSE;
+	}
+
+	if(phase == 1){
+		if(FALSE == flagContinue.flag2){
+			UART_putString(UART_0,"\033[13;10H");
+			UART_putString(UART_0,"Termino la conexion...\r");
+
+			flagContinue.flag2 = TRUE;
+		}
+		return FALSE;
+	}
+	if(phase == 2){
+		flagContinue.flag1 = FALSE;
+		flagContinue.flag2 = FALSE;
+		return FALSE;
+	}
 }
 
 

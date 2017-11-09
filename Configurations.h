@@ -145,6 +145,28 @@ typedef const struct StateFormat{
 	StateFormat_Type(*StateFormat)(StateFormat_Type);
 }StatePtrFormat_Type;
 ////////////////////////////////////////////////////////////
+typedef struct{
+	uint32 phaseState;
+	States_MenuType stateMain;
+}StateReadHour_Type;
+
+typedef StateReadHour_Type(*fptrStateReadHour)(StateReadHour_Type);
+
+typedef const struct StateReadHour{
+	StateReadHour_Type(*StateReadHour)(StateReadHour_Type);
+}StatePtrReadHour_Type;
+//////////////////////////////////////////////////////////////
+typedef struct{
+	uint32 phaseState;
+	States_MenuType stateMain;
+}StateReadDate_Type;
+
+typedef StateReadDate_Type(*fptrStateReadDate)(StateReadDate_Type);
+
+typedef const struct StateReadDate{
+	StateReadDate_Type(*StateReadDate)(StateReadDate_Type);
+}StatePtrReadDate_Type;
+////////////////////////////////////////////////////////////
 
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
@@ -169,6 +191,12 @@ StateFormat_Type stateShowFormat(StateFormat_Type data);
 StateFormat_Type stateChange(StateFormat_Type data);
 StateFormat_Type stateSaveFormat(StateFormat_Type data);
 StateFormat_Type stateFinalFormat(StateFormat_Type data);
+
+StateReadHour_Type stateReadTime(StateReadHour_Type data);
+StateReadHour_Type stateFinalRH(StateReadHour_Type data);
+
+StateReadDate_Type stateReadCalendar(StateReadDate_Type data);
+StateReadDate_Type stateFinalRD(StateReadDate_Type data);
 
 States_MenuType stateMenu(Time_Type realTime);
 States_MenuType stateRead(Time_Type realTime);

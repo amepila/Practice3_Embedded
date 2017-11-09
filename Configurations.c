@@ -70,6 +70,17 @@ const StatePtrFormat_Type statesFormat[4] =
 		{stateSaveFormat},
 		{stateFinalFormat}
 };
+
+const StatePtrReadHour_Type statesReadHour[2] =
+{
+		{stateReadTime},
+		{stateFinalRH}
+};
+
+const StatePtrReadDate_Type statesReadDate[2] = {
+		{stateReadCalendar},
+		{stateFinalRD}
+};
 /********************************************************************/
 /********************************************************************/
 StateReadI2C_Type stateAddress(StateReadI2C_Type data){
@@ -597,6 +608,23 @@ StateFormat_Type stateFinalFormat(StateFormat_Type data){
 
 	return (dataFormat4);
 }
+/**********************************************************/
+StateReadHour_Type stateReadTime(StateReadHour_Type data){
+
+}
+
+StateReadHour_Type stateFinalRH(StateReadHour_Type data){
+
+}
+/**********************************************************/
+StateReadDate_Type stateReadCalendar(StateReadDate_Type data){
+
+}
+
+StateReadDate_Type stateFinalRD(StateReadDate_Type data){
+
+}
+
 
 /********************************************************/
 /********************************************************/
@@ -853,9 +881,25 @@ States_MenuType stateFormat(Time_Type realTime){
 
 States_MenuType stateReadHour(Time_Type realTime){
 
-	States_MenuType state = READ_HOUR;
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateReadHour_Type stateReadHour;
+	StateReadHour_Type(*readHourFunctions)(StateReadHour_Type);
+	stateReadHour.stateMain = READ_HOUR;
+
+	if(FALSE == flagUART0){
+		flagUART0 = menu_ReadHour(phase);
+	}
+	if(phase == 0){
+		readHourFunctions = statesReadHour[phase].StateReadHour;
+		stateReadHour = readHourFunctions(stateReadHour);
+	}
 
 	if(getUART0_flag()){
+
+		readHourFunctions = statesReadHour[phase].StateReadHour;
+		stateReadHour = readHourFunctions(stateReadHour);
+
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, getUART0_mailBox());
 
@@ -863,7 +907,7 @@ States_MenuType stateReadHour(Time_Type realTime){
 		setUART0_flag(FALSE);
 	}
 
-	return state;
+	return (stateReadHour.stateMain);
 }
 
 States_MenuType stateReadDate(Time_Type realTime){
