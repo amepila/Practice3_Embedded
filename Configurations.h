@@ -50,6 +50,8 @@ typedef struct{
 typedef struct{
 	Hour_Type hour;
 	Date_Type date;
+	uint32 modifyTime;
+	uint32 modifyDate;
 }Time_Type;
 
 /*Data type to main functions*/
@@ -151,6 +153,9 @@ typedef const struct StateFormat{
 typedef struct{
 	uint32 phaseState;
 	States_MenuType stateMain;
+	uint32 hour;
+	uint32 minutes;
+	uint32 seconds;
 }StateReadHour_Type;
 
 typedef StateReadHour_Type(*fptrStateReadHour)(StateReadHour_Type);
@@ -162,6 +167,9 @@ typedef const struct StateReadHour{
 typedef struct{
 	uint32 phaseState;
 	States_MenuType stateMain;
+	uint32 year;
+	uint32 month;
+	uint32 day;
 }StateReadDate_Type;
 
 typedef StateReadDate_Type(*fptrStateReadDate)(StateReadDate_Type);
@@ -212,7 +220,7 @@ States_MenuType stateReadDate(Time_Type realTime);
 States_MenuType stateTerminal2(Time_Type realTime);
 States_MenuType stateEco(Time_Type realTime);
 
-void printHourLCD(Time_Type time);
+void printTimeLCD(Time_Type time);
 
 
 

@@ -83,6 +83,92 @@ const StatePtrReadDate_Type statesReadDate[2] = {
 };
 /********************************************************************/
 /********************************************************************/
+void setTimeLCD(Time_Type time){
+	if(TRUE == time.modifyTime){
+		setRTC_sec((uint8)time.hour.seconds);
+		setRTC_min((uint8)time.hour.minutes);
+		setRTC_hour((uint8)time.hour.hour);
+
+		time.modifyTime= FALSE;
+	}
+	if(TRUE == time.modifyDate){
+		setRTC_day((uint8)time.date.day);
+		setRTC_month((uint8)time.date.month);
+		setRTC_year((uint8)time.date.year);
+
+		time.modifyDate = FALSE;
+	}
+}
+
+void printTimeLCD(Time_Type time){
+
+	uint32 tmpHour;
+
+	/******************HOUR****************************/
+	if(FORMAT_24H == time.hour.format){
+
+		LCDNokia_gotoXY(15,2);
+		LCDNokia_printValue(BCDHDec(readRTC_hour()));
+		LCDNokia_printValue(BCDUni(readRTC_hour()));
+		LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+	}
+	if(FORMAT_12H == time.hour.format){
+		if(readRTC_hour() > (0x12)){
+
+			tmpHour = readRTC_hour();
+			tmpHour -= (0x12);
+
+			LCDNokia_gotoXY(15,2);
+			LCDNokia_printValue(BCDHDec(tmpHour));
+			LCDNokia_printValue(BCDUni(tmpHour));
+			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+		}
+		if(readRTC_hour() == (0x12)){
+			LCDNokia_gotoXY(15,2);
+			LCDNokia_printValue(0);
+			LCDNokia_printValue(0);
+			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+		}
+	}
+
+	LCDNokia_gotoXY(35,2);
+	LCDNokia_printValue(BCDDec(readRTC_min()));
+	LCDNokia_printValue(BCDUni(readRTC_min()));
+	LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+	LCDNokia_gotoXY(55,2);
+	LCDNokia_printValue(BCDDec(readRTC_sec()));
+	LCDNokia_printValue(BCDUni(readRTC_sec()));
+
+	/*******************DATE***************************/
+	LCDNokia_gotoXY(15,4);
+	LCDNokia_printValue(BCDDayDec(readRTC_day()));
+	LCDNokia_printValue(BCDUni(readRTC_day()));
+	LCDNokia_sendChar(ASCII_DIAG);
+
+	LCDNokia_gotoXY(35,4);
+	LCDNokia_printValue(BCDMonthDec(readRTC_month()));
+	LCDNokia_printValue(BCDUni(readRTC_month()));
+	LCDNokia_sendChar(ASCII_DIAG);
+
+	LCDNokia_gotoXY(55,4);
+	LCDNokia_printValue(BCDYearDec(readRTC_year()));
+	LCDNokia_printValue(BCDUni(readRTC_year()));
+
+	if(FORMAT_12H == time.hour.format){
+		if(readRTC_hour() > (0x12)){
+			LCDNokia_gotoXY(35,3);
+			LCDNokia_sendChar('P');
+			LCDNokia_sendChar('M');
+		}else{
+			LCDNokia_gotoXY(35,3);
+			LCDNokia_sendChar('A');
+			LCDNokia_sendChar('M');
+		}
+	}
+}
+/********************************************************************/
+/********************************************************************/
 StateReadI2C_Type stateAddress(StateReadI2C_Type data){
 
 	static uint32 counter1 = 0;
@@ -400,8 +486,14 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 StateSetHour_Type stateSaveTime(StateSetHour_Type data){
 
 	static StateSetHour_Type dataSet2;
+	Time_Type time;
 
-	//Function to pass the data to the RTC
+	time.hour.hour = data.time.hour;
+	time.hour.minutes = data.time.minutes;
+	time.hour.seconds = data.time.seconds;
+	time.modifyTime = TRUE;
+
+	setTimeLCD(time);
 
 	dataSet2.stateMain = SET_HOUR;
 	dataSet2.phaseState = 2;
@@ -499,8 +591,14 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 StateSetDate_Type stateSaveDate(StateSetDate_Type data){
 
 	static StateSetDate_Type dataSetDate2;
+	Time_Type time;
 
-	//Function to pass the data to the RTC
+	time.date.day = data.time.day;
+	time.date.month = data.time.month;
+	time.date.year = data.time.year;
+	time.modifyDate = TRUE;
+
+	setTimeLCD(time);
 
 	dataSetDate2.stateMain = SET_DATE;
 	dataSetDate2.phaseState = 2;
@@ -593,10 +691,9 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 		clearFIFO_0();
 
 		if(FORMAT_12H == data.format){
-			//Function
-
+			data.format = FORMAT_12H;
 		}else{
-			//Function
+			data.format = FORMAT_24H;
 		}
 	}
 	if(counterNo == 2){
@@ -605,9 +702,9 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 		clearFIFO_0();
 
 		if(FORMAT_12H == data.format){
-			//Function
+			data.format = FORMAT_12H;
 		}else{
-			//Function
+			data.format = FORMAT_24H;
 		}
 	}
 
@@ -628,12 +725,43 @@ StateFormat_Type stateFinalFormat(StateFormat_Type data){
 StateReadHour_Type stateReadTime(StateReadHour_Type data){
 
 	static StateReadHour_Type dataReadTime1;
+	static uint32 hourPartD;
+	static uint32 minPartD;
+	static uint32 secPartD;
+	static uint32 hourPartU;
+	static uint32 minPartU;
+	static uint32 secPartU;
+	static uint8 time[6];
+	uint32 counter;
 
+	hourPartD = readRTC_hour();
+	minPartD = readRTC_min();
+	secPartD = readRTC_sec();
+	hourPartU = readRTC_hour();
+	minPartU = readRTC_min();
+	secPartU = readRTC_sec();
 
 	if(getUART0_mailBox() != CR){
 
-		UART_putString(UART_0,"06:40:34");
+		hourPartU %= 10;
+		hourPartD /= 10;
 
+		minPartU %= 10;
+		minPartD /= 10;
+
+		secPartU %= 10;
+		secPartD /= 10;
+
+		time[0] = hourPartU + 48;
+		time[1] = hourPartD + 48;
+		time[2] = minPartU + 48;
+		time[3] = minPartD + 48;
+		time[4] = secPartU + 48;
+		time[5] = secPartD + 48;
+
+		for(counter = 0; counter < 6; counter++){
+			UART_putChar(UART_0, time[counter]);
+		}
 		dataReadTime1.phaseState = 0;
 	}
 	if(getUART0_mailBox() == CR){
@@ -680,7 +808,6 @@ StateReadDate_Type stateFinalRD(StateReadDate_Type data){
 
 }
 
-
 /********************************************************/
 /********************************************************/
 States_MenuType stateMenu(Time_Type realTime){
@@ -688,6 +815,8 @@ States_MenuType stateMenu(Time_Type realTime){
 	States_MenuType state = MENU;
 	static uint32 flagUART0 = FALSE;
 	FIFO_Type fifoMenu;
+
+	printTimeLCD(realTime);
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
@@ -736,6 +865,8 @@ States_MenuType stateRead(Time_Type realTime){
 	StateReadI2C_Type(*readFunctions)(StateReadI2C_Type);
 	stateRead.stateMain = READ;
 
+	printTimeLCD(realTime);
+
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadI2C(phase);
 	}
@@ -777,6 +908,8 @@ States_MenuType stateWrite(Time_Type realTime){
 	StateWriteI2C_Type(*writeFunctions)(StateWriteI2C_Type);
 	stateWrite.stateMain = WRITE;
 	uint32 counterChar;
+
+	printTimeLCD(realTime);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_WriteI2C(phase);
@@ -822,6 +955,7 @@ States_MenuType stateSetHour(Time_Type realTime){
 	StateSetHour_Type(*setHourFunctions)(StateSetHour_Type);
 	state_SetHour.stateMain = SET_HOUR;
 
+	printTimeLCD(realTime);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetHour(phase);
@@ -865,6 +999,8 @@ States_MenuType stateSetDate(Time_Type realTime){
 	StateSetDate_Type(*setDateFunctions)(StateSetDate_Type);
 	state_SetDate.stateMain = SET_DATE;
 
+	printTimeLCD(realTime);
+
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetDate(phase);
 	}
@@ -904,6 +1040,8 @@ States_MenuType stateFormat(Time_Type realTime){
 	StateFormat_Type(*formatFunctions)(StateFormat_Type);
 	stateFormat.stateMain = FORMAT;
 
+	printTimeLCD(realTime);
+
 	if(FALSE == flagUART0){
 		flagUART0 = menu_FormatHour(phase);
 	}
@@ -918,10 +1056,14 @@ States_MenuType stateFormat(Time_Type realTime){
 		formatFunctions = statesFormat[phase].StateFormat;
 		stateFormat = formatFunctions(stateFormat);
 	}
-
+	if(phase == 3){
+		realTime.hour.format = stateFormat.format;
+		printTimeLCD(realTime);
+	}
 	if(getUART0_flag()){
 		formatFunctions = statesFormat[phase].StateFormat;
 		stateFormat = formatFunctions(stateFormat);
+
 
 		if(phase == 4){
 			stateFormat.phaseState = 0;
@@ -941,6 +1083,11 @@ States_MenuType stateReadHour(Time_Type realTime){
 	static StateReadHour_Type stateReadHour;
 	StateReadHour_Type(*readHourFunctions)(StateReadHour_Type);
 	stateReadHour.stateMain = READ_HOUR;
+
+	printTimeLCD(realTime);
+	stateReadHour.hour = realTime.hour.hour;
+	stateReadHour.minutes = realTime.hour.minutes;
+	stateReadHour.seconds = realTime.hour.seconds;
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadHour(phase);
@@ -973,6 +1120,11 @@ States_MenuType stateReadDate(Time_Type realTime){
 	StateReadDate_Type(*readDateFunctions)(StateReadDate_Type);
 	stateReadDate.stateMain = READ_DATE;
 
+	printTimeLCD(realTime);
+	stateReadDate.day = realTime.date.day;
+	stateReadDate.month = realTime.date.month;
+	stateReadDate.year = realTime.date.year;
+
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadDate(phase);
 	}
@@ -1000,6 +1152,8 @@ States_MenuType stateTerminal2(Time_Type realTime){
 
 	States_MenuType state = TERMINAL2;
 
+	printTimeLCD(realTime);
+
 	if(getUART0_flag()){
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, getUART0_mailBox());
@@ -1015,6 +1169,8 @@ States_MenuType stateEco(Time_Type realTime){
 
 	States_MenuType state = ECO;
 
+	printTimeLCD(realTime);
+
 	if(getUART0_flag()){
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, getUART0_mailBox());
@@ -1026,20 +1182,3 @@ States_MenuType stateEco(Time_Type realTime){
 	return state;
 }
 
-
-void printHourLCD(Time_Type time){
-
-	LCDNokia_gotoXY(15,2);
-	LCDNokia_printValue(BCDHDec(readRTC_hour()));
-	LCDNokia_printValue(BCDUni(readRTC_hour()));
-	LCDNokia_sendChar(58);
-
-	LCDNokia_gotoXY(35,2);
-	LCDNokia_printValue(BCDDec(readRTC_min()));
-	LCDNokia_printValue(BCDUni(readRTC_min()));
-	LCDNokia_sendChar(58);
-
-	LCDNokia_gotoXY(55,2);
-	LCDNokia_printValue(BCDDec(readRTC_sec()));
-	LCDNokia_printValue(BCDUni(readRTC_sec()));
-}

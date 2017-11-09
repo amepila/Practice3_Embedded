@@ -24,18 +24,19 @@ void setRTC_sec(uint8 sec){
 	I2C_write_Byte(WRITECONTROL); //"11011110" Write control code, CSS and choose write
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(0x02); //Write address to access	I2C_get_ACK();
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(BCDsec); //Write BCD code
 	I2C_wait();
 	I2C_get_ACK();
+	RTCdelay(1000);
 	I2C_stop(); //Stop transfer
-	RTCdelay(500);
+	RTCdelay(1000);
 
 }
 
@@ -51,18 +52,19 @@ void setRTC_min(uint8 min){
 	I2C_write_Byte(WRITECONTROL); //"11011110" Write control code, CSS and choose write
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(0x03); //Write address to access	I2C_get_ACK();
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(BCDmin); //Write BCD code
 	I2C_wait();
 	I2C_get_ACK();
+	RTCdelay(1000);
 	I2C_stop(); //Stop transfer
-	RTCdelay(500);
+	RTCdelay(1000);
 
 }
 
@@ -78,18 +80,19 @@ void setRTC_hour(uint8 hour){
 	I2C_write_Byte(WRITECONTROL); //"11011110" Write control code, CSS and choose write
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(0x04); //Write address to access	I2C_get_ACK();
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(BCDhour); //Write BCD code
 	I2C_wait();
 	I2C_get_ACK();
+	RTCdelay(6500);
 	I2C_stop(); //Stop transfer
-	RTCdelay(500);
+	RTCdelay(1000);
 
 }
 
@@ -108,19 +111,19 @@ void setRTC_day(uint8 day){
 	I2C_write_Byte(WRITECONTROL); //"11011110" Write control code, CSS and choose write
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(0x05); //Write address to access	I2C_get_ACK();
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(BCDday); //Write BCD code
 	I2C_wait();
 	I2C_get_ACK();
+	RTCdelay(1000);
 	I2C_stop(); //Stop transfer
-	RTCdelay(500);
-
+	RTCdelay(1000);
 }
 void setRTC_month(uint8 month){
 	if(month>12){
@@ -134,18 +137,19 @@ void setRTC_month(uint8 month){
 	I2C_write_Byte(WRITECONTROL); //"11011110" Write control code, CSS and choose write
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(0x07); //Write address to access	I2C_get_ACK();
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(BCDmonth); //Write BCD code
 	I2C_wait();
 	I2C_get_ACK();
+	RTCdelay(1000);
 	I2C_stop(); //Stop transfer
-	RTCdelay(500);
+	RTCdelay(1000);
 
 }
 void setRTC_year(uint16 year){
@@ -156,24 +160,25 @@ void setRTC_year(uint16 year){
 	uint8 BCDyeardec=(yeardec%10);
 	BCDyeardec=BCDyeardec%10;
 	BCDyeardec|=(BCDyeardec/10)<<BIT4;
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_start(); //Generate Start Signal
 	I2C_write_Byte(WRITECONTROL); //"11011110" Write control code, CSS and choose write
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(0x08); //Write address to access	I2C_get_ACK();
 	I2C_wait();
 	I2C_get_ACK();
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_write_Byte(BCDyeardec); //Write BCD code
 	I2C_wait();
 	I2C_get_ACK();
+	RTCdelay(1000);
 	I2C_stop(); //Stop transfer
-	RTCdelay(500);
+	RTCdelay(1000);
 
 }
 
@@ -190,13 +195,13 @@ uint8 readRTC_sec(){
 	I2C_write_Byte(WRITECONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_write_Byte(0x02);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_repeated_Start();
@@ -204,14 +209,14 @@ uint8 readRTC_sec(){
 	I2C_write_Byte(READCONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_TX_RX_Mode(I2C_RX_MODE);// Changing I2C module to receiver mode
 
 	I2C_NACK();
 	dummy=I2C_read_Byte();
 	I2C_wait();// Checking if the I2C module is busy
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_stop();// Generating stop signal
 	dummy=I2C_read_Byte();
@@ -226,14 +231,14 @@ uint8 readRTC_min(){
 	I2C_write_Byte(WRITECONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_write_Byte(0x03);
 
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_repeated_Start();
@@ -241,14 +246,14 @@ uint8 readRTC_min(){
 	I2C_write_Byte(READCONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_TX_RX_Mode(I2C_RX_MODE);// Changing I2C module to receiver mode
 
 	I2C_NACK();
 	dummy=I2C_read_Byte();
 	I2C_wait();// Checking if the I2C module is busy
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_stop();// Generating stop signal
 	dummy=I2C_read_Byte();
@@ -263,13 +268,13 @@ uint8 readRTC_hour(){
 	I2C_write_Byte(WRITECONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_write_Byte(0x04);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_repeated_Start();
@@ -277,14 +282,14 @@ uint8 readRTC_hour(){
 	I2C_write_Byte(READCONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_TX_RX_Mode(I2C_RX_MODE);// Changing I2C module to receiver mode
 
 	I2C_NACK();
 	dummy=I2C_read_Byte();
 	I2C_wait();// Checking if the I2C module is busy
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_stop();// Generating stop signal
 	dummy=I2C_read_Byte();
@@ -310,14 +315,14 @@ uint8 readRTC_day(){
 	I2C_write_Byte(WRITECONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_write_Byte(0x05);
 
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 
 	I2C_repeated_Start();
@@ -325,14 +330,14 @@ uint8 readRTC_day(){
 	I2C_write_Byte(READCONTROL);
 	I2C_wait();
 	I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_TX_RX_Mode(I2C_RX_MODE);// Changing I2C module to receiver mode
 
 	I2C_NACK();
 	dummy=I2C_read_Byte();
 	I2C_wait();// Checking if the I2C module is busy
-	RTCdelay(500);
+	RTCdelay(1000);
 
 	I2C_stop();// Generating stop signal
 	dummy=I2C_read_Byte();
@@ -345,14 +350,14 @@ uint8 readRTC_month(){
 		I2C_write_Byte(WRITECONTROL);
 		I2C_wait();
 		I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-		RTCdelay(500);
+		RTCdelay(1000);
 
 
 		I2C_write_Byte(0x07);
 
 		I2C_wait();
 		I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-		RTCdelay(500);
+		RTCdelay(1000);
 
 
 		I2C_repeated_Start();
@@ -360,14 +365,14 @@ uint8 readRTC_month(){
 		I2C_write_Byte(READCONTROL);
 		I2C_wait();
 		I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-		RTCdelay(500);
+		RTCdelay(1000);
 
 		I2C_TX_RX_Mode(I2C_RX_MODE);// Changing I2C module to receiver mode
 
 		I2C_NACK();
 		dummy=I2C_read_Byte();
 		I2C_wait();// Checking if the I2C module is busy
-		RTCdelay(500);
+		RTCdelay(1000);
 
 		I2C_stop();// Generating stop signal
 		dummy=I2C_read_Byte();
@@ -382,14 +387,14 @@ uint8 readRTC_year(){
 		I2C_write_Byte(WRITECONTROL);
 		I2C_wait();
 		I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-		RTCdelay(500);
+		RTCdelay(1000);
 
 
 		I2C_write_Byte(0x08);
 
 		I2C_wait();
 		I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-		RTCdelay(500);
+		RTCdelay(1000);
 
 
 		I2C_repeated_Start();
@@ -397,14 +402,14 @@ uint8 readRTC_year(){
 		I2C_write_Byte(READCONTROL);
 		I2C_wait();
 		I2C_get_ACK(); //Waiting for acknowledge, this function is able to detect
-		RTCdelay(500);
+		RTCdelay(1000);
 
 		I2C_TX_RX_Mode(I2C_RX_MODE);// Changing I2C module to receiver mode
 
 		I2C_NACK();
 		dummy=I2C_read_Byte();
 		I2C_wait();// Checking if the I2C module is busy
-		RTCdelay(500);
+		RTCdelay(1000);
 
 		I2C_stop();// Generating stop signal
 		dummy=I2C_read_Byte();

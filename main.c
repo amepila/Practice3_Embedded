@@ -117,13 +117,24 @@ int main(void){
 	/**General variables**/
 	Time_Type realTimeClock;
 	realTimeClock.hour.format = FORMAT_24H;
-	realTimeClock.hour.hour = 9;
-	realTimeClock.hour.minutes = 0;
+	realTimeClock.modifyDate = FALSE;
+	realTimeClock.modifyTime = FALSE;
+
+	realTimeClock.hour.hour = 3;
+	realTimeClock.hour.minutes = 10;
 	realTimeClock.hour.seconds = 0;
 
-	setRTC_sec(realTimeClock.hour.hour);
-	setRTC_min(realTimeClock.hour.minutes);
-	setRTC_hour(realTimeClock.hour.seconds);
+	realTimeClock.date.day = 9;
+	realTimeClock.date.month = 11;
+	realTimeClock.date.year = 2017;
+
+	setRTC_sec((uint8)realTimeClock.hour.seconds);
+	setRTC_min((uint8)realTimeClock.hour.minutes);
+	setRTC_hour((uint8)realTimeClock.hour.hour);
+
+	setRTC_day((uint8)realTimeClock.date.day);
+	setRTC_month((uint8)realTimeClock.date.month);
+	setRTC_year((uint16)realTimeClock.date.year);
 
 	/***Interruptions Configurations***/
 	/**Set the reference priority **/
@@ -144,13 +155,9 @@ int main(void){
 	EnableInterrupts;
 
     while(1){
-    	printHourLCD(realTimeClock);
-
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;
     	currentState = mainFunctions(realTimeClock);
-
-    	LCDNokia_clear();
     }
     return 0;
 }
