@@ -132,7 +132,19 @@ typedef StateSetDate_Type(*fptrStateSetDate)(StateSetDate_Type);
 typedef const struct StateSetDate{
 	StateSetDate_Type(*StateSetDate)(StateSetDate_Type);
 }StatePtrSetDate_Type;
-/////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+typedef struct{
+	uint32 phaseState;
+	States_MenuType stateMain;
+	FORMAT_HOUR format;
+}StateFormat_Type;
+
+typedef StateFormat_Type(*fptrStateFormat)(StateFormat_Type);
+
+typedef const struct StateFormat{
+	StateFormat_Type(*StateFormat)(StateFormat_Type);
+}StatePtrFormat_Type;
+////////////////////////////////////////////////////////////
 
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
@@ -152,6 +164,11 @@ StateSetHour_Type stateFinalSetHour(StateSetHour_Type data);
 StateSetDate_Type stateSetCalendar(StateSetDate_Type data);
 StateSetDate_Type stateSaveDate(StateSetDate_Type data);
 StateSetDate_Type stateFinalSetDate(StateSetDate_Type data);
+
+StateFormat_Type stateShowFormat(StateFormat_Type data);
+StateFormat_Type stateChange(StateFormat_Type data);
+StateFormat_Type stateSaveFormat(StateFormat_Type data);
+StateFormat_Type stateFinalFormat(StateFormat_Type data);
 
 States_MenuType stateMenu(Time_Type realTime);
 States_MenuType stateRead(Time_Type realTime);

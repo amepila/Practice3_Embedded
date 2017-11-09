@@ -63,6 +63,13 @@ const StatePtrSetDate_Type statesSetDate[3] =
 		{stateFinalSetDate}
 };
 
+const StatePtrFormat_Type statesFormat[4] =
+{
+		{stateShowFormat},
+		{stateChange},
+		{stateSaveFormat},
+		{stateFinalFormat}
+};
 /********************************************************************/
 /********************************************************************/
 StateReadI2C_Type stateAddress(StateReadI2C_Type data){
@@ -502,7 +509,94 @@ StateSetDate_Type stateFinalSetDate(StateSetDate_Type data){
 	dataSetDate3.stateMain = MENU;
 	return (dataSetDate3);
 }
+/*****************************************************************/
+StateFormat_Type stateShowFormat(StateFormat_Type data){
 
+	static StateFormat_Type dataFormat1;
+
+	if(FORMAT_12H == data.format){
+		UART_putString(UART_0,"12h");
+	}
+	if(FORMAT_24H == data.format){
+		UART_putString(UART_0,"24h");
+	}
+
+	dataFormat1.format = FORMAT_12H;
+	dataFormat1.stateMain = FORMAT;
+	dataFormat1.phaseState = 1;
+
+	return (dataFormat1);
+}
+
+StateFormat_Type stateChange(StateFormat_Type data){
+
+	static StateFormat_Type dataFormat2;
+
+	if(FORMAT_12H == data.format){
+		UART_putString(UART_0,"24h");
+	}
+	if(FORMAT_24H == data.format){
+		UART_putString(UART_0,"12h");
+	}
+
+	dataFormat2.format = FORMAT_12H;
+	dataFormat2.stateMain = FORMAT;
+	dataFormat2.phaseState = 2;
+
+	return (dataFormat2);
+}
+
+StateFormat_Type stateSaveFormat(StateFormat_Type data){
+
+	static StateFormat_Type dataFormat3;
+	static FIFO_Type fifo;
+	static uint32 counterChar = 0;
+
+	if(getUART0_mailBox() != CR){
+		/**Sends to the PCA the received data in the mailbox*/
+		UART_putChar(UART_0, getUART0_mailBox());
+	}
+
+	pushFIFO_0(getUART0_mailBox());
+	dataFormat3.phaseState = 2;
+
+	if(getUART0_mailBox() == CR){
+		fifo =  popFIFO_0();
+
+		if(('S' == fifo.data[0]) || ('s' == fifo.data[0])){
+			counterChar++;
+		}
+		if(('I' == fifo.data[1]) || ('i' == fifo.data[1])){
+			counterChar++;
+		}
+		if(('N' == fifo.data[0]) || ('n' == fifo.data[0])){
+			counterChar++;
+		}
+		if(('O' == fifo.data[1]) || ('o' == fifo.data[1])){
+			counterChar++;
+		}
+
+		dataFormat3.phaseState = 3;
+	}
+
+	if(counterChar == 2){
+		counterChar = 0;
+		clearFIFO_0();
+	}
+
+	dataFormat3.stateMain = FORMAT;
+
+	return (dataFormat3);
+}
+
+StateFormat_Type stateFinalFormat(StateFormat_Type data){
+
+	static StateFormat_Type dataFormat4;
+
+	dataFormat4.stateMain = MENU;
+
+	return (dataFormat4);
+}
 
 /********************************************************/
 /********************************************************/
@@ -721,17 +815,40 @@ States_MenuType stateSetDate(Time_Type realTime){
 
 States_MenuType stateFormat(Time_Type realTime){
 
-	States_MenuType state = FORMAT;
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateFormat_Type stateFormat;
+	StateFormat_Type(*formatFunctions)(StateFormat_Type);
+	stateFormat.stateMain = FORMAT;
+
+	if(FALSE == flagUART0){
+		flagUART0 = menu_FormatHour(phase);
+	}
+
+	if(phase == 0){
+		clearUART0_mailbox();
+		stateFormat.format = realTime.hour.format;
+		formatFunctions = statesFormat[phase].StateFormat;
+		stateFormat = formatFunctions(stateFormat);
+	}
+	if(phase == 1){
+		formatFunctions = statesFormat[phase].StateFormat;
+		stateFormat = formatFunctions(stateFormat);
+	}
 
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		formatFunctions = statesFormat[phase].StateFormat;
+		stateFormat = formatFunctions(stateFormat);
 
+		if(phase == 4){
+			stateFormat.phaseState = 0;
+			flagUART0 = FALSE;
+		}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
-	return state;
+	phase = stateFormat.phaseState;
+	return (stateFormat.stateMain);
 }
 
 States_MenuType stateReadHour(Time_Type realTime){
