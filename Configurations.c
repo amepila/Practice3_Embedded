@@ -357,31 +357,37 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 
 		if(HOUR == flagType){
 			dataSet1.time.hour = Convert_numberASCIItoDATA(fifoTime.data);
+			UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 		}
 		if(MINUTES == flagType){
 			dataSet1.time.minutes = Convert_numberASCIItoDATA(fifoTime.data);
+			UART_putChar(UART_0, ASCII_DOUBLEPOINT);
 		}
-		if((SECONDS == flagType) && (FORMAT_24H == data.format)){
+		if((SECONDS == flagType) && (FORMAT_24H == data.time.format)){
 			dataSet1.time.seconds = Convert_numberASCIItoDATA(fifoTime.data);
 			dataSet1.phaseState = 1;
-		}else{
+		}
+		if((SECONDS == flagType) && (FORMAT_12H == data.time.format)){
 			dataSet1.time.seconds = Convert_numberASCIItoDATA(fifoTime.data);
 			dataSet1.phaseState = 0;
+		}
+		if((PERIOD == flagType) && (FORMAT_12H == data.time.format)){
 
 			if(('A' == fifoTime.data[0]) || ('a' == fifoTime.data[0])){
 				dataSet1.time.period = PERIOD_AM;
+				dataSet1.phaseState = 1;
 			}
 			if(('P' == fifoTime.data[0]) || ('p' == fifoTime.data[0])){
 				dataSet1.time.period = PERIOD_PM;
+				dataSet1.phaseState = 1;
 			}
 		}
 		clearFIFO_0();
 		clearUART0_mailbox();
-		UART_putChar(UART_0, ASCII_DOUBLEPOINT);
-
 		flagType++;
-		if(flagType > 2){flagType = HOUR;}
+		if(flagType > 3){flagType = HOUR;}
 	}
+	dataSet1.time.format = data.time.format;
 	dataSet1.stateMain = SET_HOUR;
 	return (dataSet1);
 }
@@ -396,6 +402,7 @@ StateSetHour_Type stateSaveTime(StateSetHour_Type data){
 	time.hour.minutes = data.time.minutes;
 	time.hour.seconds = data.time.seconds;
 	time.modifyTime = TRUE;
+	time.hour.format = data.time.format;
 
 	setTimeLCD(time);
 
@@ -542,20 +549,10 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 
 	if(getUART0_mailBox() == CR){
 		fifo =  popFIFO_0();
-
-		if(('S' == fifo.data[0]) || ('s' == fifo.data[0])){
-			counterYes++;
-		}
-		if(('I' == fifo.data[1]) || ('i' == fifo.data[1])){
-			counterYes++;
-		}
-		if(('N' == fifo.data[0]) || ('n' == fifo.data[0])){
-			counterNo++;
-		}
-		if(('O' == fifo.data[1]) || ('o' == fifo.data[1])){
-			counterNo++;
-		}
-
+		if(('S' == fifo.data[0]) || ('s' == fifo.data[0])){  counterYes++;}
+		if(('I' == fifo.data[1]) || ('i' == fifo.data[1])){  counterYes++;}
+		if(('N' == fifo.data[0]) || ('n' == fifo.data[0])){  counterNo++;}
+		if(('O' == fifo.data[1]) || ('o' == fifo.data[1])){  counterNo++;}
 		dataFormat3.phaseState = 3;
 	}
 
@@ -565,9 +562,10 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 		clearFIFO_0();
 
 		if(FORMAT_12H == data.format){
-			data.format = FORMAT_12H;
-		}else{
-			data.format = FORMAT_24H;
+			dataFormat3.format = FORMAT_24H;
+		}
+		if(FORMAT_24H == data.format){
+			dataFormat3.format = FORMAT_12H;
 		}
 	}
 	if(counterNo == 2){
@@ -576,14 +574,14 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 		clearFIFO_0();
 
 		if(FORMAT_12H == data.format){
-			data.format = FORMAT_12H;
-		}else{
-			data.format = FORMAT_24H;
+			dataFormat3.format = FORMAT_12H;
 		}
+		if(FORMAT_24H == data.format){
+			dataFormat3.format = FORMAT_24H;
+		}
+
 	}
-
 	dataFormat3.stateMain = FORMAT;
-
 	return (dataFormat3);
 }
 
@@ -857,7 +855,7 @@ States_MenuType stateSetHour(Time_Type realTime){
 	if(phase == 0){
 		if(FALSE == flagInit_Format){
 			clearUART0_mailbox();
-			state_SetHour.format = realTime.hour.format;
+			state_SetHour.time.format = realTime.hour.format;
 			flagInit_Format = TRUE;
 		}
 	}
@@ -933,6 +931,7 @@ States_MenuType stateFormat(Time_Type realTime){
 	static StateFormat_Type stateFormat;
 	StateFormat_Type(*formatFunctions)(StateFormat_Type);
 	stateFormat.stateMain = FORMAT;
+	static FORMAT_HOUR formatHour;
 
 	printTimeLCD(realTime);
 
@@ -958,7 +957,9 @@ States_MenuType stateFormat(Time_Type realTime){
 		formatFunctions = statesFormat[phase].StateFormat;
 		stateFormat = formatFunctions(stateFormat);
 
-
+		if(phase == 2){
+			formatHour = stateFormat.format;
+		}
 		if(phase == 4){
 			stateFormat.phaseState = 0;
 			flagUART0 = FALSE;

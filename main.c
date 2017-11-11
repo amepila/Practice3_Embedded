@@ -115,10 +115,10 @@ int main(void){
 	I2C_init(I2C_0, 30000000, 100000);
 
 	/**General variables**/
-	Time_Type realTimeClock;
-	realTimeClock.hour.format = FORMAT_24H;
-	realTimeClock.modifyDate = FALSE;
-	realTimeClock.modifyTime = FALSE;
+	static Time_Type realTimeClock;
+	realTimeClock.hour.format = FORMAT_12H;
+	realTimeClock.modifyDate = TRUE;
+	realTimeClock.modifyTime = TRUE;
 
 	realTimeClock.hour.hour = 3;
 	realTimeClock.hour.minutes = 10;
@@ -128,13 +128,7 @@ int main(void){
 	realTimeClock.date.month = 11;
 	realTimeClock.date.year = 2017;
 
-	setRTC_sec((uint8)realTimeClock.hour.seconds);
-	setRTC_min((uint8)realTimeClock.hour.minutes);
-	setRTC_hour((uint8)realTimeClock.hour.hour);
-
-	setRTC_day((uint8)realTimeClock.date.day);
-	setRTC_month((uint8)realTimeClock.date.month);
-	setRTC_year((uint16)realTimeClock.date.year);
+	setTimeLCD(realTimeClock);
 
 	/***Interruptions Configurations***/
 	/**Set the reference priority **/

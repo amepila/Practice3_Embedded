@@ -117,7 +117,7 @@ typedef struct{
 	FORMAT_HOUR format;
 }StateSetHour_Type;
 
-typedef enum{HOUR, MINUTES, SECONDS}FlagHour_Type;
+typedef enum{HOUR, MINUTES, SECONDS, PERIOD}FlagHour_Type;
 
 typedef StateSetHour_Type(*fptrStateSetHour)(StateSetHour_Type);
 
