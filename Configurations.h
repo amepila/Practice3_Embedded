@@ -18,6 +18,7 @@
 #include "RTC.h"
 #include "UART.h"
 
+
 /*Data type to States of the program*/
 typedef enum{
 	MENU,
@@ -34,11 +35,14 @@ typedef enum{
 
 typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
 
+typedef enum{PERIOD_AM, PERIOD_PM}PERIOD_TIME;
+
 typedef struct{
 	uint32	hour;
 	uint32	minutes;
 	uint32	seconds;
 	FORMAT_HOUR format;
+	PERIOD_TIME period;
 }Hour_Type;
 
 typedef struct{
@@ -156,6 +160,7 @@ typedef struct{
 	uint32 hour;
 	uint32 minutes;
 	uint32 seconds;
+	uint32 flagBlock;
 }StateReadHour_Type;
 
 typedef StateReadHour_Type(*fptrStateReadHour)(StateReadHour_Type);
@@ -170,6 +175,7 @@ typedef struct{
 	uint32 year;
 	uint32 month;
 	uint32 day;
+	uint32 flagBlock;
 }StateReadDate_Type;
 
 typedef StateReadDate_Type(*fptrStateReadDate)(StateReadDate_Type);
@@ -179,6 +185,8 @@ typedef const struct StateReadDate{
 }StatePtrReadDate_Type;
 ////////////////////////////////////////////////////////////
 
+void printTimeLCD(Time_Type time);
+void setTimeLCD(Time_Type time);
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
 StateReadI2C_Type stateLenght(StateReadI2C_Type data);
@@ -219,9 +227,5 @@ States_MenuType stateReadHour(Time_Type realTime);
 States_MenuType stateReadDate(Time_Type realTime);
 States_MenuType stateTerminal2(Time_Type realTime);
 States_MenuType stateEco(Time_Type realTime);
-
-void printTimeLCD(Time_Type time);
-
-
 
 #endif /* CONFIGURATIONS_H_ */
