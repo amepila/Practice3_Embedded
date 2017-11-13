@@ -33,9 +33,9 @@ typedef enum{
 	ECO
 }States_MenuType;
 
-typedef enum{FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
+typedef enum{NON_FORMAT,FORMAT_12H, FORMAT_24H}FORMAT_HOUR;
 
-typedef enum{PERIOD_AM, PERIOD_PM}PERIOD_TIME;
+typedef enum{NON_PERIOD,PERIOD_AM, PERIOD_PM}PERIOD_TIME;
 
 typedef struct{
 	uint32	hour;
@@ -187,6 +187,7 @@ typedef const struct StateReadDate{
 
 void printTimeLCD(Time_Type time);
 void setTimeLCD(Time_Type time);
+Time_Type getTime();
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
 StateReadI2C_Type stateLenght(StateReadI2C_Type data);

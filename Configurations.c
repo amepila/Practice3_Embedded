@@ -31,6 +31,9 @@ typedef enum{
 }ASCII_code;
 
 const uint8 CR = 13;
+static uint32 FormatClock;
+static Time_Type Clock;
+
 /******************States********************************************/
 /********************************************************************/
 const StatePtrRead_Type statesReadI2C[4] =
@@ -100,9 +103,26 @@ void setTimeLCD(Time_Type time){
 	}
 }
 
+Time_Type getTime(Time_Type time){
+	Time_Type realTime;
+
+	realTime.hour.hour = readRTC_hour();
+	realTime.hour.minutes = readRTC_min();
+	realTime.hour.seconds = readRTC_sec();
+	realTime.hour.format = time.hour.format;
+	realTime.hour.period = time.hour.period;
+
+	realTime.date.year = readRTC_year();
+	realTime.date.month = readRTC_month();
+	realTime.date.day = readRTC_day();
+
+	return (realTime);
+}
+
 void printTimeLCD(Time_Type time){
 
 	uint32 tmpHour;
+	static uint32 lockFormat;
 
 	/******************HOUR****************************/
 	if(FORMAT_24H == time.hour.format){
@@ -525,7 +545,7 @@ StateFormat_Type stateChange(StateFormat_Type data){
 		UART_putString(UART_0,"12h ");
 	}
 
-	dataFormat2.format = FORMAT_12H;
+	dataFormat2.format = data.format;
 	dataFormat2.stateMain = FORMAT;
 	dataFormat2.phaseState = 2;
 
@@ -579,7 +599,6 @@ StateFormat_Type stateSaveFormat(StateFormat_Type data){
 		if(FORMAT_24H == data.format){
 			dataFormat3.format = FORMAT_24H;
 		}
-
 	}
 	dataFormat3.stateMain = FORMAT;
 	return (dataFormat3);
@@ -706,9 +725,14 @@ States_MenuType stateMenu(Time_Type realTime){
 
 	States_MenuType state = MENU;
 	static uint32 flagUART0 = FALSE;
+	static uint32 lockRTC = FALSE;
 	FIFO_Type fifoMenu;
 
-	printTimeLCD(realTime);
+	if(FALSE == lockRTC){
+		Clock = realTime;
+		lockRTC = TRUE;
+	}
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
@@ -757,7 +781,7 @@ States_MenuType stateRead(Time_Type realTime){
 	StateReadI2C_Type(*readFunctions)(StateReadI2C_Type);
 	stateRead.stateMain = READ;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadI2C(phase);
@@ -801,7 +825,7 @@ States_MenuType stateWrite(Time_Type realTime){
 	stateWrite.stateMain = WRITE;
 	uint32 counterChar;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_WriteI2C(phase);
@@ -847,7 +871,7 @@ States_MenuType stateSetHour(Time_Type realTime){
 	StateSetHour_Type(*setHourFunctions)(StateSetHour_Type);
 	state_SetHour.stateMain = SET_HOUR;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetHour(phase);
@@ -855,7 +879,7 @@ States_MenuType stateSetHour(Time_Type realTime){
 	if(phase == 0){
 		if(FALSE == flagInit_Format){
 			clearUART0_mailbox();
-			state_SetHour.time.format = realTime.hour.format;
+			state_SetHour.time.format = Clock.hour.format;
 			flagInit_Format = TRUE;
 		}
 	}
@@ -891,7 +915,7 @@ States_MenuType stateSetDate(Time_Type realTime){
 	StateSetDate_Type(*setDateFunctions)(StateSetDate_Type);
 	state_SetDate.stateMain = SET_DATE;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_SetDate(phase);
@@ -928,12 +952,13 @@ States_MenuType stateFormat(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagPrint = FALSE;
 	static StateFormat_Type stateFormat;
+	static StateFormat_Type dataMemory;
 	StateFormat_Type(*formatFunctions)(StateFormat_Type);
 	stateFormat.stateMain = FORMAT;
-	static FORMAT_HOUR formatHour;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_FormatHour(phase);
@@ -941,24 +966,21 @@ States_MenuType stateFormat(Time_Type realTime){
 
 	if(phase == 0){
 		clearUART0_mailbox();
-		stateFormat.format = realTime.hour.format;
+		dataMemory.format = Clock.hour.format;
 		formatFunctions = statesFormat[phase].StateFormat;
-		stateFormat = formatFunctions(stateFormat);
+		stateFormat = formatFunctions(dataMemory);
 	}
 	if(phase == 1){
 		formatFunctions = statesFormat[phase].StateFormat;
-		stateFormat = formatFunctions(stateFormat);
-	}
-	if(phase == 3){
-		realTime.hour.format = stateFormat.format;
-		printTimeLCD(realTime);
+		stateFormat = formatFunctions(dataMemory);
 	}
 	if(getUART0_flag()){
 		formatFunctions = statesFormat[phase].StateFormat;
-		stateFormat = formatFunctions(stateFormat);
+		stateFormat = formatFunctions(dataMemory);
 
-		if(phase == 2){
-			formatHour = stateFormat.format;
+		if(stateFormat.phaseState == 3){
+			Clock.hour.format = stateFormat.format;
+			printTimeLCD(Clock);
 		}
 		if(phase == 4){
 			stateFormat.phaseState = 0;
@@ -979,7 +1001,7 @@ States_MenuType stateReadHour(Time_Type realTime){
 	StateReadHour_Type(*readHourFunctions)(StateReadHour_Type);
 	stateReadHour.stateMain = READ_HOUR;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 	stateReadHour.hour = realTime.hour.hour;
 	stateReadHour.minutes = realTime.hour.minutes;
 	stateReadHour.seconds = realTime.hour.seconds;
@@ -1015,7 +1037,7 @@ States_MenuType stateReadDate(Time_Type realTime){
 	StateReadDate_Type(*readDateFunctions)(StateReadDate_Type);
 	stateReadDate.stateMain = READ_DATE;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 	stateReadDate.day = realTime.date.day;
 	stateReadDate.month = realTime.date.month;
 	stateReadDate.year = realTime.date.year;
@@ -1047,7 +1069,7 @@ States_MenuType stateTerminal2(Time_Type realTime){
 
 	States_MenuType state = TERMINAL2;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(getUART0_flag()){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -1064,7 +1086,7 @@ States_MenuType stateEco(Time_Type realTime){
 
 	States_MenuType state = ECO;
 
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(getUART0_flag()){
 		/**Sends to the PCA the received data in the mailbox*/

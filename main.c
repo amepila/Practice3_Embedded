@@ -117,6 +117,7 @@ int main(void){
 	/**General variables**/
 	static Time_Type realTimeClock;
 	realTimeClock.hour.format = FORMAT_12H;
+	realTimeClock.hour.period = PERIOD_AM;
 	realTimeClock.modifyDate = TRUE;
 	realTimeClock.modifyTime = TRUE;
 
