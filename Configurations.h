@@ -184,6 +184,20 @@ typedef const struct StateReadDate{
 	StateReadDate_Type(*StateReadDate)(StateReadDate_Type);
 }StatePtrReadDate_Type;
 ////////////////////////////////////////////////////////////
+typedef struct{
+	uint32 phaseState;
+	States_MenuType stateMain;
+	uint32 flagBlock;
+}StateEco_Type;
+
+typedef StateEco_Type(*fptrStateEco)(StateEco_Type);
+
+typedef const struct StateEco{
+	StateEco_Type(*StateEco)(StateEco_Type);
+}StatePtrEco_Type;
+//////////////////////////////////////////////////////////////////
+
+
 
 void printTimeLCD(Time_Type time);
 void setTimeLCD(Time_Type time);
@@ -217,6 +231,9 @@ StateReadHour_Type stateFinalRH(StateReadHour_Type data);
 
 StateReadDate_Type stateReadCalendar(StateReadDate_Type data);
 StateReadDate_Type stateFinalRD(StateReadDate_Type data);
+
+StateEco_Type stateTransmitEco(StateEco_Type);
+StateEco_Type stateFinalEco(StateEco_Type);
 
 States_MenuType stateMenu(Time_Type realTime);
 States_MenuType stateRead(Time_Type realTime);

@@ -30,9 +30,11 @@ typedef enum{
 		ASCII_z,			ASCII_BRACEOPEN,	ASCII_VERT,			ASCII_BRACECLOSE,	ASCII_TILDE
 }ASCII_code;
 
+const uint8 ESC = 27;
 const uint8 CR = 13;
 static uint32 FormatClock;
 static Time_Type Clock;
+
 
 /******************States********************************************/
 /********************************************************************/
@@ -84,6 +86,11 @@ const StatePtrReadDate_Type statesReadDate[2] = {
 		{stateReadCalendar},
 		{stateFinalRD}
 };
+
+const StatePtrEco_Type statesEco[2] = {
+		{stateTransmitEco},
+		{stateFinalEco}
+};
 /********************************************************************/
 /********************************************************************/
 void setTimeLCD(Time_Type time){
@@ -103,14 +110,14 @@ void setTimeLCD(Time_Type time){
 	}
 }
 
-Time_Type getTime(Time_Type time){
+Time_Type getTime(void){
 	Time_Type realTime;
 
 	realTime.hour.hour = readRTC_hour();
 	realTime.hour.minutes = readRTC_min();
 	realTime.hour.seconds = readRTC_sec();
-	realTime.hour.format = time.hour.format;
-	realTime.hour.period = time.hour.period;
+	realTime.hour.format = Clock.hour.format;
+	realTime.hour.period = Clock.hour.period;
 
 	realTime.date.year = readRTC_year();
 	realTime.date.month = readRTC_month();
@@ -612,6 +619,7 @@ StateFormat_Type stateFinalFormat(StateFormat_Type data){
 
 	return (dataFormat4);
 }
+
 /**********************************************************/
 StateReadHour_Type stateReadTime(StateReadHour_Type data){
 
@@ -717,6 +725,38 @@ StateReadDate_Type stateFinalRD(StateReadDate_Type data){
 	dataReadCal2.stateMain = MENU;
 	return dataReadCal2;
 
+}
+
+/*************************************************************/
+StateEco_Type stateTransmitEco(StateEco_Type data){
+
+	static StateEco_Type dataEco1;
+
+	if(getUART0_mailBox() != ESC){
+		/**Sends to the PCA the received data in the mailbox*/
+		UART_putChar(UART_0, getUART0_mailBox());
+		LCDNokia_sendChar(getUART0_mailBox());
+	}
+
+	//LCDNokia_gotoXY(15,2);
+	pushFIFO_0(getUART0_mailBox());
+	dataEco1.phaseState = 0;
+
+	if(getUART0_mailBox() == ESC){
+		dataEco1.phaseState = 1;
+		clearFIFO_0();
+	}
+
+	dataEco1.stateMain = ECO;
+	return (dataEco1);
+}
+
+StateEco_Type stateFinalEco(StateEco_Type data){
+
+	static StateEco_Type dataEco2;
+
+	dataEco2.stateMain = MENU;
+	return (dataEco2);
 }
 
 /********************************************************/
@@ -1084,18 +1124,24 @@ States_MenuType stateTerminal2(Time_Type realTime){
 
 States_MenuType stateEco(Time_Type realTime){
 
-	States_MenuType state = ECO;
+	static uint32 phase = 0;
+	static uint32 flagUART0 = FALSE;
+	static StateEco_Type stateEco;
+	StateEco_Type(*ecoFunctions)(StateEco_Type);
+	stateEco.stateMain = ECO;
 
-	printTimeLCD(Clock);
+	if(FALSE == flagUART0){
+		flagUART0 = menu_EcoLCD(phase);
+	}
 
 	if(getUART0_flag()){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
+		ecoFunctions = statesEco[phase].StateEco;
+		stateEco = ecoFunctions(stateEco);
 
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
-	return state;
+	phase = stateEco.phaseState;
+	return (stateEco.stateMain);
 }
 
