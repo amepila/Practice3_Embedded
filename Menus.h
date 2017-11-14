@@ -43,5 +43,8 @@ uint8 menu_CommTerminal2(uint8 phase);
 uint8 menu_EcoLCD(uint8 phase);
 
 
+uint8 menu_Main4(void);
+
+
 
 #endif /* MENUS_H_ */

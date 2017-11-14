@@ -128,8 +128,6 @@ Time_Type getTime(void){
 void printTimeLCD(Time_Type time){
 
 	uint32 tmpHour;
-	static uint32 lockFormat;
-
 	/******************HOUR****************************/
 	if(FORMAT_24H == time.hour.format){
 
@@ -193,6 +191,45 @@ void printTimeLCD(Time_Type time){
 		}
 	}
 }
+void printHourUART(Time_Type time){
+
+}
+
+void printDateUART(Time_Type time){
+
+	uint32 partDecDay;
+	uint32 partUnDay;
+	uint32 partDecMonth;
+	uint32 partUnMonth;
+	uint32 partDecYear;
+	uint32 partUnYear;
+	uint8 date[6];
+
+	partDecDay = time.date.day / 10;
+	partUnDay = time.date.day % 10;
+	date[0] = '0' + partDecDay;
+	date[1] = '0' + partUnDay;
+
+	partDecMonth = time.date.month / 10;
+	partUnMonth = time.date.month % 10;
+	date[2] = '0' + partDecMonth;
+	date[3] = '0' + partUnMonth;
+
+	partDecYear = (time.date.year - 2000)/ 10;
+	partUnYear = time.date.year % 10;
+	date[4] = '0' + partDecYear;
+	date[5] = '0' + partUnYear;
+
+	UART_putChar(UART_0, date[0]);
+	UART_putChar(UART_0, date[1]);
+	UART_putChar(UART_0, ASCII_DIAG);
+	UART_putChar(UART_0, date[2]);
+	UART_putChar(UART_0, date[3]);
+	UART_putChar(UART_0, ASCII_DIAG);
+	UART_putChar(UART_0, date[4]);
+	UART_putChar(UART_0, date[5]);
+}
+
 /********************************************************************/
 /********************************************************************/
 StateReadI2C_Type stateAddress(StateReadI2C_Type data){
@@ -693,27 +730,20 @@ StateReadHour_Type stateFinalRH(StateReadHour_Type data){
 StateReadDate_Type stateReadCalendar(StateReadDate_Type data){
 
 	static StateReadDate_Type dataReadCal1;
-	static uint32 dayrPartD;
-	static uint32 monthPartD;
-	static uint32 yearPartD;
-	static uint32 dayPartU;
-	static uint32 monthPartU;
-	static uint32 yearPartU;
-	static uint8 date[6];
+	static uint32 flagLock = FALSE;
 
-	//dayPartD =
-
-	if(getUART0_mailBox() != CR){
-
-
-
-		dataReadCal1.phaseState = 0;
+	if(FALSE == flagLock){
+		printDateUART(Clock);
+		flagLock = TRUE;
 	}
+	dataReadCal1.phaseState = 0;
+
 	if(getUART0_mailBox() == CR){
-		dataReadCal1.phaseState = 0;
+		dataReadCal1.phaseState = 1;
+		flagLock = FALSE;
 	}
 
-	dataReadCal1.stateMain = READ_HOUR;
+	dataReadCal1.stateMain = READ_DATE;
 	return dataReadCal1;
 }
 
@@ -723,7 +753,6 @@ StateReadDate_Type stateFinalRD(StateReadDate_Type data){
 
 	dataReadCal2.stateMain = MENU;
 	return dataReadCal2;
-
 }
 
 /*************************************************************/
@@ -736,7 +765,7 @@ StateEco_Type stateTransmitEco(StateEco_Type data){
 	pushFIFO_0(getUART0_mailBox());
 	fifo = popFIFO_0();
 
-	if((fifo.data != ESC) && (counter < 50)){
+	if((fifo.data[counter] != ESC) && (counter < 50)){
 		/**Sends to the PCA the received data in the mailbox*/
 		UART_putChar(UART_0, fifo.data[counter]);
 		LCDNokia_sendChar(fifo.data[counter]);
@@ -773,6 +802,7 @@ States_MenuType stateMenu(Time_Type realTime){
 
 	States_MenuType state = MENU;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagUART4 = FALSE;
 	static uint32 lockRTC = FALSE;
 	FIFO_Type fifoMenu;
 
@@ -783,6 +813,7 @@ States_MenuType stateMenu(Time_Type realTime){
 	printTimeLCD(realTime);
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
+	if(FALSE == flagUART4){flagUART4 = menu_Main4();}
 
 	if(getUART0_flag()){
 		if(getUART0_mailBox() != CR){
@@ -1000,7 +1031,6 @@ States_MenuType stateFormat(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
-	static uint32 flagPrint = FALSE;
 	static StateFormat_Type stateFormat;
 	static StateFormat_Type dataMemory;
 	StateFormat_Type(*formatFunctions)(StateFormat_Type);
@@ -1081,24 +1111,26 @@ States_MenuType stateReadDate(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagLock = FALSE;
 	static StateReadDate_Type stateReadDate;
 	StateReadDate_Type(*readDateFunctions)(StateReadDate_Type);
 	stateReadDate.stateMain = READ_DATE;
-
-	printTimeLCD(Clock);
-	stateReadDate.day = realTime.date.day;
-	stateReadDate.month = realTime.date.month;
-	stateReadDate.year = realTime.date.year;
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadDate(phase);
 	}
 	if(phase == 0){
-		readDateFunctions = statesReadDate[phase].StateReadDate;
-		stateReadDate = readDateFunctions(stateReadDate);
+		if(FALSE == flagLock){
+			readDateFunctions = statesReadDate[phase].StateReadDate;
+			stateReadDate = readDateFunctions(stateReadDate);
+			flagLock = TRUE;
+		}
 	}
 	if(phase == 1){
+		readDateFunctions = statesReadDate[phase].StateReadDate;
+		stateReadDate = readDateFunctions(stateReadDate);
 		stateReadDate.phaseState = 0;
+		flagLock = FALSE;
 		flagUART0 = FALSE;
 	}
 	if(getUART0_flag()){
@@ -1108,7 +1140,6 @@ States_MenuType stateReadDate(Time_Type realTime){
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
 	phase = stateReadDate.phaseState;
 	return (stateReadDate.stateMain);
 }

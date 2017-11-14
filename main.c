@@ -140,18 +140,18 @@ int main(void){
 	NVIC_enableInterruptAndPriotity(PORTB_IRQ, PRIORITY_8);
 	NVIC_enableInterruptAndPriotity(PORTC_IRQ, PRIORITY_8);
 	NVIC_enableInterruptAndPriotity(UART0_IRQ, PRIORITY_9);
-	NVIC_enableInterruptAndPriotity(UART1_IRQ, PRIORITY_9);
+	NVIC_enableInterruptAndPriotity(UART4_IRQ, PRIORITY_9);
 
 	/**Configures UART 0 to transmit/receive at 115200 bauds with a 60 MHz of clock core*/
-	UART_init (UART_0, 60000000, BD_115200);
+	UART0_init(UART_0, 60000000, BD_115200);
 	/**Configures UART 1 to transmit/receive at 9600 bauds in Bluetooth with a 60 MHz of clock core*/
-	UART_init (UART_1, 60000000, BD_9600);
+	UART4_init(UART_4, 30000000, BD_9600);
 	/**Enables the UART interrupts*/
 	UART0_interruptEnable(UART_0);
-	UART1_interruptEnable(UART_1);
+	UART4_interruptEnable(UART_4);
 	/**Enable all the interrupts **/
 	EnableInterrupts;
-
+	//menu_Main4();
     while(1){
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;

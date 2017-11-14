@@ -202,6 +202,9 @@ typedef const struct StateEco{
 void printTimeLCD(Time_Type time);
 void setTimeLCD(Time_Type time);
 Time_Type getTime();
+void printHourUART(Time_Type time);
+void printDateUART(Time_Type time);
+
 
 StateReadI2C_Type stateAddress(StateReadI2C_Type data);
 StateReadI2C_Type stateLenght(StateReadI2C_Type data);

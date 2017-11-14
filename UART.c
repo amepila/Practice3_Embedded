@@ -10,10 +10,10 @@
 
 /*Global variable that saves the info*/
 UART_MailBoxType UART0_MailBox;
-UART_MailBoxType UART1_MailBox;
+UART_MailBoxType UART4_MailBox;
 
 FIFO_Type FIFO_UART0;
-FIFO_Type FIFO_UART1;
+FIFO_Type FIFO_UART4;
 
 /*Table of BRFD. Range 0:31 */
 const float BRFD_Type[32] = {
@@ -33,13 +33,13 @@ void UART0_RX_TX_IRQHandler (void){
 
 }
 
-void UART1_RX_TX_IRQHandler (void){
+void UART4_RX_TX_IRQHandler (void){
 	/*First is verified if the serial port finished to transmit*/
-	while(!(UART1->S1 & UART_S1_RDRF_MASK));
+	while(!(UART4->S1 & UART_S1_RDRF_MASK));
 	/*The info is saved in Data Register*/
-	UART0_MailBox.mailBox = UART1->D;
+	UART4_MailBox.mailBox = UART4->D;
 	/*There are new data*/
-	UART1_MailBox.flag = 1;
+	UART4_MailBox.flag = 1;
 
 }
 
@@ -49,9 +49,9 @@ uint8 getUART0_mailBox(){
 	return (UART0_MailBox.mailBox);
 }
 
-uint8 getUART1_mailBox(){
+uint8 getUART4_mailBox(){
 	/*Return the value of mailbox*/
-	return (UART1_MailBox.mailBox);
+	return (UART4_MailBox.mailBox);
 }
 
 uint8 getUART0_flag(){
@@ -59,9 +59,9 @@ uint8 getUART0_flag(){
 	return (UART0_MailBox.flag);
 }
 
-uint8 getUART1_flag(){
+uint8 getUART4_flag(){
 	/*Return the value of the flag of mailbox*/
-	return (UART1_MailBox.flag);
+	return (UART4_MailBox.flag);
 }
 
 void setUART0_mailBox(uint8 character){
@@ -69,9 +69,9 @@ void setUART0_mailBox(uint8 character){
 	UART0_MailBox.mailBox = character;
 }
 
-void setUART1_mailBox(uint8 character){
+void setUART4_mailBox(uint8 character){
 	/*Assigns the character into the mailbox*/
-	UART1_MailBox.mailBox = character;
+	UART4_MailBox.mailBox = character;
 }
 
 void setUART0_flag(uint8 status){
@@ -79,9 +79,9 @@ void setUART0_flag(uint8 status){
 	UART0_MailBox.flag = status;
 }
 
-void setUART1_flag(uint8 status){
+void setUART4_flag(uint8 status){
 	/*Changes the value of the flag of mailbox*/
-	UART1_MailBox.flag = status;
+	UART4_MailBox.flag = status;
 }
 
 
@@ -92,7 +92,7 @@ void delay(uint32 delay){
 	}
 }
 
-void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate){
+void UART0_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate){
 
 	/*Variable saves the original value of Baud Rate*/
 	float sBR;
@@ -180,66 +180,149 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 	/*Saves the Low part of Baud Rate*/
 	sbr_LOW = sbr_TEMP & UART_SBR_MASK_LOW;
 
-	switch(uartChannel){
-	case UART_0:
-		/*Enable the clock of UART 0 */
-		SIM->SCGC4 |= SIM_SCGC4_UART0_MASK;
-		/*Disable the Rx of UART*/
-		UART0->C2 &= ~(UART_C2_RE_MASK);
-		/*Disable the Tx of UART*/
-		UART0->C2 &= ~(UART_C2_TE_MASK);
-		/*Default settings*/
-		UART0->C1 = 0;
+	/*Enable the clock of UART 0 */
+	SIM->SCGC4 |= SIM_SCGC4_UART0_MASK;
+	/*Disable the Rx of UART*/
+	UART0->C2 &= ~(UART_C2_RE_MASK);
+	/*Disable the Tx of UART*/
+	UART0->C2 &= ~(UART_C2_TE_MASK);
+	/*Default settings*/
+	UART0->C1 = 0;
 
 
-		/*Clear the High part of SBR*/
-		UART0->BDH &= ~(UART_CLEAR_BDH);
-		/*Send the High part of SBR*/
-		UART0->BDH |= sbr_HIGH;
-		/*Clear the Low part of SBR*/
-		UART0->BDL &= ~(UART_CLEAR_BDL);
-		/*Send the Low part of SBR*/
-		UART0->BDL |= sbr_LOW;
+	/*Clear the High part of SBR*/
+	UART0->BDH &= ~(UART_CLEAR_BDH);
+	/*Send the High part of SBR*/
+	UART0->BDH |= sbr_HIGH;
+	/*Clear the Low part of SBR*/
+	UART0->BDL &= ~(UART_CLEAR_BDL);
+	/*Send the Low part of SBR*/
+	UART0->BDL |= sbr_LOW;
 
 
-		/*Send the Baud Rate Fine Adjust to register*/
-		UART0->C4 |= BRFA;
-		/*Enable Rx of UART*/
-		UART0->C2 |= (UART_C2_RE_MASK);
-		/*Enable Tx of UART*/
-		UART0->C2 |= (UART_C2_TE_MASK);
-		break;
-	case UART_1:
-		/*Enable the clock of UART 1 */
-		SIM->SCGC4 |= SIM_SCGC4_UART1_MASK;
-		/*Disable the Rx of UART*/
-		UART1->C2 &= ~(UART_C2_RE_MASK);
-		/*Disable the Tx of UART*/
-		UART1->C2 &= ~(UART_C2_TE_MASK);
-		/*Default settings*/
-		UART1->C1 = 0;
+	/*Send the Baud Rate Fine Adjust to register*/
+	UART0->C4 |= BRFA;
+	/*Enable Rx of UART*/
+	UART0->C2 |= (UART_C2_RE_MASK);
+	/*Enable Tx of UART*/
+	UART0->C2 |= (UART_C2_TE_MASK);
+}
+
+void UART4_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate){
+
+	/*Variable saves the original value of Baud Rate*/
+	float sBR;
+	/*Variables saves the Baud Rate by parts*/
+	uint32 sbr_HIGH;
+	uint32 sbr_LOW;
+	/*Variable saves the complete Baud Rate*/
+	uint32 sbr_TEMP;
+	/*Variables saves the Baud Rate Fine Adjust*/
+	uint8 BRFA;
+	/*Variables saves the difference of BaudRate expected and the original*/
+	float diff;
+	/*Counter that advances between BRFD values*/
+	uint8 counter;
+	/*Variable saves the BRFD value
+	 *its default value is 1 for practicality
+	 */
+	float BRFD = 1;
 
 
-		/*Clear the High part of SBR*/
-		UART1->BDH &= ~(UART_CLEAR_BDH);
-		/*Send the High part of SBR*/
-		UART1->BDH |= sbr_HIGH;
-		/*Clear the Low part of SBR*/
-		UART1->BDL &= ~(UART_CLEAR_BDL);
-		/*Send the Low part of SBR*/
-		UART1->BDL |= sbr_LOW;
+	/**Enables the clock of PortC in order to configures TX and RX of UART peripheral*/
+	SIM->SCGC5 = SIM_SCGC5_PORTC_MASK;
 
+	/**Configures the pin control register of pin14 in PortC as UART RX*/
+	PORTC->PCR[14] = PORT_PCR_MUX(3);
+	/**Configures the pin control register of pin15 in PortC as UART TX*/
+	PORTC->PCR[15] = PORT_PCR_MUX(3);
 
-		/*Send the Baud Rate Fine Adjust to register*/
-		UART1->C4 |= BRFA;
-		/*Enable Rx of UART*/
-		UART1->C2 |= (UART_C2_RE_MASK);
-		/*Enable Tx of UART*/
-		UART1->C2 |= (UART_C2_TE_MASK);
-		break;
-	default:
-		break;
+	/*Isolate the baudRate variable
+	 * 115200 = 21000000/((SBR+BRFD)*16)
+	 * sBR+BRFD = 11.3932
+	 * Assume BRFD = 0
+	 * sBR = 11.3932 - BRFD
+	 * sBR = 11.3932 - 0.375
+	 * BRFD = 0.375 = 12/32 = 01100
+	 * 115384 BR
+	 */
+
+	/*Isolate the SBR value assuming that BRFD = 0*/
+	sBR = ((float)systemClk/(baudRate*16));
+	/*Obtains the value of the float difference of SBR*/
+	diff = (sBR - (uint32)sBR);
+
+	/*Loop that verifies with the BRFD values*/
+	for(counter = 0; counter < 32; counter++){
+
+		/*Verifies that the difference is between some value of BRFA*/
+		if((diff > BRFD_Type[counter-1]) && (diff < BRFD_Type[counter+1])){
+			/*Verifies that the BRFD is the value with smaller difference*/
+			if(BRFD > BRFD_Type[counter]){
+				/*Saves the values of BRFD and BRFA*/
+				BRFD = BRFD_Type[counter];
+				BRFA = counter;
+			}
+		}
+		/*Special case with the initial value of BRFA*/
+		if(counter == 0){
+			/*Verifies that the difference is between some value of BRFA*/
+			if((diff >= BRFD_Type[counter]) && (diff < BRFD_Type[counter+1])){
+				/*Verifies that the BRFD is the value with smaller difference*/
+				if(BRFD > BRFD_Type[counter]){
+					/*Saves the values of BRFD and BRFA*/
+					BRFD = BRFD_Type[counter];
+					BRFA = counter;
+				}
+			}
+		}
+		/*Special case with the final value of BRFA*/
+		if(counter == 31){
+			/*Verifies that the difference is between some value of BRFA*/
+			if((diff <= BRFD_Type[counter]) && (diff > BRFD_Type[counter-1])){
+				/*Verifies that the BRFD is the value with smaller difference*/
+				if(BRFD > BRFD_Type[counter]){
+					/*Saves the values of BRFD and BRFA*/
+					BRFD = BRFD_Type[counter];
+					BRFA = counter;
+				}
+			}
+		}
 	}
+
+	/*Considers only the integer part*/
+	sbr_TEMP = (uint32)sBR;
+	/*Saves the High part of Baud Rate*/
+	sbr_HIGH = sbr_TEMP & UART_SBR_MASK_HIGH;
+	/*Saves the Low part of Baud Rate*/
+	sbr_LOW = sbr_TEMP & UART_SBR_MASK_LOW;
+
+	/*Enable the clock of UART 1 */
+	SIM->SCGC1 |= SIM_SCGC1_UART4_MASK;
+	/*Disable the Rx of UART*/
+	UART4->C2 &= ~(UART_C2_RE_MASK);
+	/*Disable the Tx of UART*/
+	UART4->C2 &= ~(UART_C2_TE_MASK);
+	/*Default settings*/
+	UART4->C1 = 0;
+
+
+	/*Clear the High part of SBR*/
+	UART4->BDH &= ~(UART_CLEAR_BDH);
+	/*Send the High part of SBR*/
+	UART4->BDH |= sbr_HIGH;
+	/*Clear the Low part of SBR*/
+	UART4->BDL &= ~(UART_CLEAR_BDL);
+	/*Send the Low part of SBR*/
+	UART4->BDL |= sbr_LOW;
+
+
+	/*Send the Baud Rate Fine Adjust to register*/
+	UART4->C4 |= BRFA;
+	/*Enable Rx of UART*/
+	UART4->C2 |= (UART_C2_RE_MASK);
+	/*Enable Tx of UART*/
+	UART4->C2 |= (UART_C2_TE_MASK);
 }
 
 void UART0_interruptEnable(UART_ChannelType uartChannel){
@@ -250,11 +333,11 @@ void UART0_interruptEnable(UART_ChannelType uartChannel){
 	}
 }
 
-void UART1_interruptEnable(UART_ChannelType uartChannel){
+void UART4_interruptEnable(UART_ChannelType uartChannel){
 	/*Verifies if the data is complete*/
-	if(!(UART1->S1 & UART_S1_RDRF_MASK)){
+	if(!(UART4->S1 & UART_S1_RDRF_MASK)){
 		/*Enable the interrupter of reception*/
-		UART1->C2 |= UART_C2_RIE_MASK;
+		UART4->C2 |= UART_C2_RIE_MASK;
 	}
 }
 
@@ -268,11 +351,11 @@ void UART_putChar (UART_ChannelType uartChannel, uint8 character){
 		UART0->D = character;
 		delay(S);
 		break;
-	case UART_1:
+	case UART_4:
 		/*Check if there isn't data transmission*/
-		while(!(UART1->S1 & UART_S1_TDRE_MASK));
+		while(!(UART4->S1 & UART_S1_TDRE_MASK));
 		/*Send character to Data Register*/
-		UART1->D = character;
+		UART4->D = character;
 		delay(S);
 		break;
 	default:
@@ -296,13 +379,13 @@ void UART_putString(UART_ChannelType uartChannel, sint8* string){
 			delay(S);
 		}
 		break;
-	case UART_1:
+	case UART_4:
 		/*Check if there isn't data transmission*/
-		while(!(UART1->S1 & UART_S1_TDRE_MASK));
+		while(!(UART4->S1 & UART_S1_TDRE_MASK));
 		/*Transmit the data until find the NULL value*/
 		while(string[counter] != '\0'){
 			/*Each character of string is send to Data Register*/
-			UART1->D = string[counter];
+			UART4->D = string[counter];
 			/*Move to next position in the array*/
 			counter++;
 			delay(S);
@@ -318,8 +401,8 @@ uint8 clearUART0_mailbox(){
 	return TRUE;
 }
 
-uint8 clearUART1_mailbox(){
-	UART1_MailBox.mailBox = 0;
+uint8 clearUART4_mailbox(){
+	UART4_MailBox.mailBox = 0;
 	return TRUE;
 }
 
@@ -406,7 +489,7 @@ FIFO_Type popFIFO_0(void){
 	return (fifo);
 }
 
-FIFO_Type popFIFO_1(void){
+FIFO_Type popFIFO_4(void){
 
 	uint32 counterSize = 0;
 	uint32 position = 0;
@@ -414,7 +497,7 @@ FIFO_Type popFIFO_1(void){
 	static uint32 counterChar;
 	FIFO_Type fifo;
 
-	while(FIFO_UART1.data[counterSize] != '\0'){
+	while(FIFO_UART4.data[counterSize] != '\0'){
 		counterSize++;
 	}
 
@@ -423,7 +506,7 @@ FIFO_Type popFIFO_1(void){
 	}
 
 	for(counterChar = counterSize; counterChar != 0; counterChar--){
-		fifo.data[position] = FIFO_UART1.data[position];
+		fifo.data[position] = FIFO_UART4.data[position];
 		position++;
 
 	}
@@ -454,25 +537,25 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 	return (FIFO_UART0.stateFIFO);
 }
 
-FIFO_FlagType pushFIFO_1(uint8 character){
+FIFO_FlagType pushFIFO_4(uint8 character){
 
 	static uint32 counterChar = 0;
 	const uint32 CR = 13;
 
 	if(character != CR){
-		FIFO_UART1.data[counterChar] = character;
+		FIFO_UART4.data[counterChar] = character;
 		counterChar++;
-		FIFO_UART1.stateFIFO = NORMAL;
+		FIFO_UART4.stateFIFO = NORMAL;
 	}else{
-		FIFO_UART1.data[counterChar] = character;
-		FIFO_UART1.size = counterChar;
+		FIFO_UART4.data[counterChar] = character;
+		FIFO_UART4.size = counterChar;
 		counterChar = 0;
-		FIFO_UART1.stateFIFO = NORMAL;
-		if(FIFO_UART1.size >= 50){
-			FIFO_UART1.stateFIFO = FULL;
+		FIFO_UART4.stateFIFO = NORMAL;
+		if(FIFO_UART4.size >= 50){
+			FIFO_UART4.stateFIFO = FULL;
 		}
 	}
-	return (FIFO_UART1.stateFIFO);
+	return (FIFO_UART4.stateFIFO);
 }
 
 FIFO_FlagType clearFIFO_0(void){
@@ -488,16 +571,16 @@ FIFO_FlagType clearFIFO_0(void){
 	return (FIFO_UART0.stateFIFO);
 }
 
-FIFO_FlagType clearFIFO_1(void){
+FIFO_FlagType clearFIFO_4(void){
 
 	uint32 counter;
 
 	for(counter = 0; counter < 50; counter++){
-		FIFO_UART0.data[counter] = '\0';
+		FIFO_UART4.data[counter] = '\0';
 	}
-	FIFO_UART1.size = 0;
-	FIFO_UART1.stateFIFO = EMPTY;
+	FIFO_UART4.size = 0;
+	FIFO_UART4.stateFIFO = EMPTY;
 
-	return (FIFO_UART1.stateFIFO);
+	return (FIFO_UART4.stateFIFO);
 }
 
