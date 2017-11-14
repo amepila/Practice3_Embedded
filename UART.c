@@ -10,6 +10,7 @@
 
 /*Global variable that saves the info*/
 UART_MailBoxType UART0_MailBox;
+UART_MailBoxType UART1_MailBox;
 
 FIFO_Type FIFO_UART0;
 FIFO_Type FIFO_UART1;
@@ -32,9 +33,25 @@ void UART0_RX_TX_IRQHandler (void){
 
 }
 
+void UART1_RX_TX_IRQHandler (void){
+	/*First is verified if the serial port finished to transmit*/
+	while(!(UART1->S1 & UART_S1_RDRF_MASK));
+	/*The info is saved in Data Register*/
+	UART0_MailBox.mailBox = UART1->D;
+	/*There are new data*/
+	UART1_MailBox.flag = 1;
+
+}
+
+
 uint8 getUART0_mailBox(){
 	/*Return the value of mailbox*/
 	return (UART0_MailBox.mailBox);
+}
+
+uint8 getUART1_mailBox(){
+	/*Return the value of mailbox*/
+	return (UART1_MailBox.mailBox);
 }
 
 uint8 getUART0_flag(){
@@ -42,14 +59,29 @@ uint8 getUART0_flag(){
 	return (UART0_MailBox.flag);
 }
 
+uint8 getUART1_flag(){
+	/*Return the value of the flag of mailbox*/
+	return (UART1_MailBox.flag);
+}
+
 void setUART0_mailBox(uint8 character){
 	/*Assigns the character into the mailbox*/
 	UART0_MailBox.mailBox = character;
 }
 
+void setUART1_mailBox(uint8 character){
+	/*Assigns the character into the mailbox*/
+	UART1_MailBox.mailBox = character;
+}
+
 void setUART0_flag(uint8 status){
 	/*Changes the value of the flag of mailbox*/
 	UART0_MailBox.flag = status;
+}
+
+void setUART1_flag(uint8 status){
+	/*Changes the value of the flag of mailbox*/
+	UART1_MailBox.flag = status;
 }
 
 
@@ -148,33 +180,66 @@ void UART_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType
 	/*Saves the Low part of Baud Rate*/
 	sbr_LOW = sbr_TEMP & UART_SBR_MASK_LOW;
 
-
-	/*Enable the clock of UART 0 */
-	SIM->SCGC4 |= SIM_SCGC4_UART0_MASK;
-	/*Disable the Rx of UART*/
-	UART0->C2 &= ~(UART_C2_RE_MASK);
-	/*Disable the Tx of UART*/
-	UART0->C2 &= ~(UART_C2_TE_MASK);
-	/*Default settings*/
-	UART0->C1 = 0;
-
-
-	/*Clear the High part of SBR*/
-	UART0->BDH &= ~(UART_CLEAR_BDH);
-	/*Send the High part of SBR*/
-	UART0->BDH |= sbr_HIGH;
-	/*Clear the Low part of SBR*/
-	UART0->BDL &= ~(UART_CLEAR_BDL);
-	/*Send the Low part of SBR*/
-	UART0->BDL |= sbr_LOW;
+	switch(uartChannel){
+	case UART_0:
+		/*Enable the clock of UART 0 */
+		SIM->SCGC4 |= SIM_SCGC4_UART0_MASK;
+		/*Disable the Rx of UART*/
+		UART0->C2 &= ~(UART_C2_RE_MASK);
+		/*Disable the Tx of UART*/
+		UART0->C2 &= ~(UART_C2_TE_MASK);
+		/*Default settings*/
+		UART0->C1 = 0;
 
 
-	/*Send the Baud Rate Fine Adjust to register*/
-	UART0->C4 |= BRFA;
-	/*Enable Rx of UART*/
-	UART0->C2 |= (UART_C2_RE_MASK);
-	/*Enable Tx of UART*/
-	UART0->C2 |= (UART_C2_TE_MASK);
+		/*Clear the High part of SBR*/
+		UART0->BDH &= ~(UART_CLEAR_BDH);
+		/*Send the High part of SBR*/
+		UART0->BDH |= sbr_HIGH;
+		/*Clear the Low part of SBR*/
+		UART0->BDL &= ~(UART_CLEAR_BDL);
+		/*Send the Low part of SBR*/
+		UART0->BDL |= sbr_LOW;
+
+
+		/*Send the Baud Rate Fine Adjust to register*/
+		UART0->C4 |= BRFA;
+		/*Enable Rx of UART*/
+		UART0->C2 |= (UART_C2_RE_MASK);
+		/*Enable Tx of UART*/
+		UART0->C2 |= (UART_C2_TE_MASK);
+		break;
+	case UART_1:
+		/*Enable the clock of UART 1 */
+		SIM->SCGC4 |= SIM_SCGC4_UART1_MASK;
+		/*Disable the Rx of UART*/
+		UART1->C2 &= ~(UART_C2_RE_MASK);
+		/*Disable the Tx of UART*/
+		UART1->C2 &= ~(UART_C2_TE_MASK);
+		/*Default settings*/
+		UART1->C1 = 0;
+
+
+		/*Clear the High part of SBR*/
+		UART1->BDH &= ~(UART_CLEAR_BDH);
+		/*Send the High part of SBR*/
+		UART1->BDH |= sbr_HIGH;
+		/*Clear the Low part of SBR*/
+		UART1->BDL &= ~(UART_CLEAR_BDL);
+		/*Send the Low part of SBR*/
+		UART1->BDL |= sbr_LOW;
+
+
+		/*Send the Baud Rate Fine Adjust to register*/
+		UART1->C4 |= BRFA;
+		/*Enable Rx of UART*/
+		UART1->C2 |= (UART_C2_RE_MASK);
+		/*Enable Tx of UART*/
+		UART1->C2 |= (UART_C2_TE_MASK);
+		break;
+	default:
+		break;
+	}
 }
 
 void UART0_interruptEnable(UART_ChannelType uartChannel){
@@ -185,32 +250,76 @@ void UART0_interruptEnable(UART_ChannelType uartChannel){
 	}
 }
 
+void UART1_interruptEnable(UART_ChannelType uartChannel){
+	/*Verifies if the data is complete*/
+	if(!(UART1->S1 & UART_S1_RDRF_MASK)){
+		/*Enable the interrupter of reception*/
+		UART1->C2 |= UART_C2_RIE_MASK;
+	}
+}
+
 void UART_putChar (UART_ChannelType uartChannel, uint8 character){
-	/*Check if there isn't data transmission*/
-	while(!(UART0->S1 & UART_S1_TDRE_MASK));
-	/*Send character to Data Register*/
-	UART0->D = character;
-	delay(S);
+
+	switch(uartChannel){
+	case UART_0:
+		/*Check if there isn't data transmission*/
+		while(!(UART0->S1 & UART_S1_TDRE_MASK));
+		/*Send character to Data Register*/
+		UART0->D = character;
+		delay(S);
+		break;
+	case UART_1:
+		/*Check if there isn't data transmission*/
+		while(!(UART1->S1 & UART_S1_TDRE_MASK));
+		/*Send character to Data Register*/
+		UART1->D = character;
+		delay(S);
+		break;
+	default:
+		break;
+	}
 }
 
 void UART_putString(UART_ChannelType uartChannel, sint8* string){
 	/*Counter that verifies each position of the array*/
 	uint8 counter = 0;
-	/*Check if there isn't data transmission*/
-	while(!(UART0->S1 & UART_S1_TDRE_MASK));
-	/*Transmit the data until find the NULL value*/
-	while(string[counter] != '\0'){
-		/*Each character of string is send to Data Register*/
-		UART0->D = string[counter];
-		/*Move to next position in the array*/
-		counter++;
-		delay(S);
-
+	switch(uartChannel){
+	case UART_0:
+		/*Check if there isn't data transmission*/
+		while(!(UART0->S1 & UART_S1_TDRE_MASK));
+		/*Transmit the data until find the NULL value*/
+		while(string[counter] != '\0'){
+			/*Each character of string is send to Data Register*/
+			UART0->D = string[counter];
+			/*Move to next position in the array*/
+			counter++;
+			delay(S);
+		}
+		break;
+	case UART_1:
+		/*Check if there isn't data transmission*/
+		while(!(UART1->S1 & UART_S1_TDRE_MASK));
+		/*Transmit the data until find the NULL value*/
+		while(string[counter] != '\0'){
+			/*Each character of string is send to Data Register*/
+			UART1->D = string[counter];
+			/*Move to next position in the array*/
+			counter++;
+			delay(S);
+		}
+		break;
+	default:
+		break;
 	}
 }
 
 uint8 clearUART0_mailbox(){
 	UART0_MailBox.mailBox = 0;
+	return TRUE;
+}
+
+uint8 clearUART1_mailbox(){
+	UART1_MailBox.mailBox = 0;
 	return TRUE;
 }
 
@@ -297,6 +406,33 @@ FIFO_Type popFIFO_0(void){
 	return (fifo);
 }
 
+FIFO_Type popFIFO_1(void){
+
+	uint32 counterSize = 0;
+	uint32 position = 0;
+	uint32 counterClear;
+	static uint32 counterChar;
+	FIFO_Type fifo;
+
+	while(FIFO_UART1.data[counterSize] != '\0'){
+		counterSize++;
+	}
+
+	for(counterClear = 0; counterClear < 50; counterClear++){
+		fifo.data[counterClear] = '\0';
+	}
+
+	for(counterChar = counterSize; counterChar != 0; counterChar--){
+		fifo.data[position] = FIFO_UART1.data[position];
+		position++;
+
+	}
+
+	fifo.size = counterSize;
+	fifo.stateFIFO = NORMAL;
+	return (fifo);
+}
+
 FIFO_FlagType pushFIFO_0(uint8 character){
 
 	static uint32 counterChar = 0;
@@ -318,6 +454,27 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 	return (FIFO_UART0.stateFIFO);
 }
 
+FIFO_FlagType pushFIFO_1(uint8 character){
+
+	static uint32 counterChar = 0;
+	const uint32 CR = 13;
+
+	if(character != CR){
+		FIFO_UART1.data[counterChar] = character;
+		counterChar++;
+		FIFO_UART1.stateFIFO = NORMAL;
+	}else{
+		FIFO_UART1.data[counterChar] = character;
+		FIFO_UART1.size = counterChar;
+		counterChar = 0;
+		FIFO_UART1.stateFIFO = NORMAL;
+		if(FIFO_UART1.size >= 50){
+			FIFO_UART1.stateFIFO = FULL;
+		}
+	}
+	return (FIFO_UART1.stateFIFO);
+}
+
 FIFO_FlagType clearFIFO_0(void){
 
 	uint32 counter;
@@ -329,5 +486,18 @@ FIFO_FlagType clearFIFO_0(void){
 	FIFO_UART0.stateFIFO = EMPTY;
 
 	return (FIFO_UART0.stateFIFO);
+}
+
+FIFO_FlagType clearFIFO_1(void){
+
+	uint32 counter;
+
+	for(counter = 0; counter < 50; counter++){
+		FIFO_UART0.data[counter] = '\0';
+	}
+	FIFO_UART1.size = 0;
+	FIFO_UART1.stateFIFO = EMPTY;
+
+	return (FIFO_UART1.stateFIFO);
 }
 

@@ -75,7 +75,7 @@ const SPI_ConfigType SPI_Config={
 							SPI_0,				/**Channel SPI0**/
 							SPI_MASTER,			/**Set like master the SPI**/
 							GPIO_MUX2,			/**Set like MUX2 in GPIO**/
-							SPI_BAUD_RATE_4,	/**Baudrate to SPI**/
+							SPI_BAUD_RATE_6,	/**Baudrate to SPI**/
 							SPI_FSIZE_8,		/**Size of frame**/
 							{GPIO_D,BIT1,BIT2}};/**GPIO for SPI**/
 
@@ -116,7 +116,7 @@ int main(void){
 
 	/**General variables**/
 	static Time_Type realTimeClock;
-	realTimeClock.hour.format = FORMAT_12H;
+	realTimeClock.hour.format = FORMAT_24H;
 	realTimeClock.hour.period = PERIOD_AM;
 	realTimeClock.modifyDate = TRUE;
 	realTimeClock.modifyTime = TRUE;
@@ -144,8 +144,11 @@ int main(void){
 
 	/**Configures UART 0 to transmit/receive at 115200 bauds with a 60 MHz of clock core*/
 	UART_init (UART_0, 60000000, BD_115200);
-	/**Enables the UART 0 interrupt*/
+	/**Configures UART 1 to transmit/receive at 9600 bauds in Bluetooth with a 60 MHz of clock core*/
+	UART_init (UART_1, 60000000, BD_9600);
+	/**Enables the UART interrupts*/
 	UART0_interruptEnable(UART_0);
+	UART1_interruptEnable(UART_1);
 	/**Enable all the interrupts **/
 	EnableInterrupts;
 

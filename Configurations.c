@@ -32,7 +32,6 @@ typedef enum{
 
 const uint8 ESC = 27;
 const uint8 CR = 13;
-static uint32 FormatClock;
 static Time_Type Clock;
 
 
@@ -731,22 +730,30 @@ StateReadDate_Type stateFinalRD(StateReadDate_Type data){
 StateEco_Type stateTransmitEco(StateEco_Type data){
 
 	static StateEco_Type dataEco1;
+	static FIFO_Type fifo;
+	static uint32 counter = 0;
 
-	if(getUART0_mailBox() != ESC){
-		/**Sends to the PCA the received data in the mailbox*/
-		UART_putChar(UART_0, getUART0_mailBox());
-		LCDNokia_sendChar(getUART0_mailBox());
-	}
-
-	//LCDNokia_gotoXY(15,2);
 	pushFIFO_0(getUART0_mailBox());
+	fifo = popFIFO_0();
+
+	if((fifo.data != ESC) && (counter < 50)){
+		/**Sends to the PCA the received data in the mailbox*/
+		UART_putChar(UART_0, fifo.data[counter]);
+		LCDNokia_sendChar(fifo.data[counter]);
+	}
 	dataEco1.phaseState = 0;
 
-	if(getUART0_mailBox() == ESC){
-		dataEco1.phaseState = 1;
+	if(counter == 50){
 		clearFIFO_0();
+		counter = 0;
 	}
 
+	if(fifo.data[counter] == ESC){
+		dataEco1.phaseState = 1;
+		counter = 0;
+		clearFIFO_0();
+	}
+	counter++;
 	dataEco1.stateMain = ECO;
 	return (dataEco1);
 }
@@ -755,6 +762,7 @@ StateEco_Type stateFinalEco(StateEco_Type data){
 
 	static StateEco_Type dataEco2;
 
+	LCDNokia_clear();
 	dataEco2.stateMain = MENU;
 	return (dataEco2);
 }
@@ -772,7 +780,7 @@ States_MenuType stateMenu(Time_Type realTime){
 		Clock = realTime;
 		lockRTC = TRUE;
 	}
-	printTimeLCD(Clock);
+	printTimeLCD(realTime);
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
@@ -1126,6 +1134,7 @@ States_MenuType stateEco(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagClear = FALSE;
 	static StateEco_Type stateEco;
 	StateEco_Type(*ecoFunctions)(StateEco_Type);
 	stateEco.stateMain = ECO;
@@ -1134,10 +1143,15 @@ States_MenuType stateEco(Time_Type realTime){
 		flagUART0 = menu_EcoLCD(phase);
 	}
 
+	if(FALSE == flagClear){
+		LCDNokia_clear();
+		flagClear = TRUE;
+	}
 	if(getUART0_flag()){
 		ecoFunctions = statesEco[phase].StateEco;
 		stateEco = ecoFunctions(stateEco);
 
+		if(phase == 1){ flagClear = FALSE;}
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}

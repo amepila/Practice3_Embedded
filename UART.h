@@ -89,6 +89,18 @@ void UART0_interruptEnable(UART_ChannelType uartChannel);
 /********************************************************************************************/
 /********************************************************************************************/
 /*!
+ 	 \brief	 enables the RX UART interrupt). This function should include the next sentence:
+ 	 while (!(UART1_S1 & UART_S1_RDRF_MASK)). It is to guaranty that the incoming data is complete
+ 	 when reception register is read. For more details see chapter 52 in the kinetis reference manual.
+ 	 \param[in]  uartChannel indicates the UART channel.
+ 	 \return void
+ */
+void UART1_interruptEnable(UART_ChannelType uartChannel);
+
+/********************************************************************************************/
+/********************************************************************************************/
+/********************************************************************************************/
+/*!
  	 \brief	 It sends one character through the serial port. This function should include the next sentence:
  	 while(!(UART0_S1 & UART_S1_TC_MASK)). It is to guaranty that before to try to transmit a byte, the previous
  	 one was transmitted. In other word, to avoid to transmit data while the UART is busy transmitting information.
@@ -110,16 +122,24 @@ void UART_putChar (UART_ChannelType uartChannel, uint8 character);
 void UART_putString(UART_ChannelType uartChannel, sint8* string);
 
 uint8 getUART0_mailBox();
+uint8 getUART1_mailBox();
 uint8 getUART0_flag();
+uint8 getUART1_flag();
 void setUART0_mailBox(uint8 character);
+void setUART1_mailBox(uint8 character);
 void setUART0_flag(uint8 status);
+void setUART1_flag(uint8 status);
 uint8 clearUART0_mailbox();
+uint8 clearUART1_mailbox();
 uint32 expBASE10(uint8 limit);
 uint32 Convert_numberASCIItoDATA(uint8 *string);
 uint8 Convert_wordASCIItoDATA(uint8 word);
 FIFO_Type popFIFO_0(void);
+FIFO_Type popFIFO_1(void);
 FIFO_FlagType pushFIFO_0(uint8 character);
+FIFO_FlagType pushFIFO_1(uint8 character);
 FIFO_FlagType clearFIFO_0(void);
+FIFO_FlagType clearFIFO_1(void);
 
 #endif /* UART_H_ */
 
