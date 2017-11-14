@@ -134,7 +134,7 @@ typedef struct{
 	uint32 flagDay  : 1;
 }StateSetDate_Type;
 
-typedef enum{YEAR, MONTH, DAY}FlagDate_Type;
+typedef enum{DAY, MONTH, YEAR}FlagDate_Type;
 
 typedef StateSetDate_Type(*fptrStateSetDate)(StateSetDate_Type);
 

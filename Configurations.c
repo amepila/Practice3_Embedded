@@ -98,6 +98,7 @@ void setTimeLCD(Time_Type time){
 		setRTC_min((uint8)time.hour.minutes);
 		setRTC_hour((uint8)time.hour.hour);
 
+		Clock = time;
 		time.modifyTime= FALSE;
 	}
 	if(TRUE == time.modifyDate){
@@ -105,8 +106,10 @@ void setTimeLCD(Time_Type time){
 		setRTC_month((uint8)time.date.month);
 		setRTC_year((uint8)time.date.year);
 
+		Clock = time;
 		time.modifyDate = FALSE;
 	}
+
 }
 
 Time_Type getTime(void){
@@ -215,7 +218,8 @@ void printDateUART(Time_Type time){
 	date[2] = '0' + partDecMonth;
 	date[3] = '0' + partUnMonth;
 
-	partDecYear = (time.date.year - 2000)/ 10;
+	if(time.date.year > 1000){	partDecYear = (time.date.year - 2000)/ 10;}
+	if(time.date.year < 1000){  partDecYear = (time.date.year / 10);}
 	partUnYear = time.date.year % 10;
 	date[4] = '0' + partDecYear;
 	date[5] = '0' + partUnYear;
@@ -488,7 +492,7 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 	static StateSetDate_Type dataSetDate1;
 	static uint32 counterDate = 0;
 	static FIFO_Type fifoTime;
-	static FlagDate_Type flagType= YEAR;
+	static FlagDate_Type flagType= DAY;
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -504,28 +508,32 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 		counterDate = 0;
 		dataSetDate1.phaseState = 0;
 	}
+
 	/******************Detector CR********************/
 	if(getUART0_mailBox() == CR){
 		counterDate = 0;
 		fifoTime = popFIFO_0();
 		dataSetDate1.phaseState = 0;
 
-		if(YEAR == flagType){
-			dataSetDate1.time.year = Convert_numberASCIItoDATA(fifoTime.data);
+		if(DAY == flagType){
+			dataSetDate1.time.day = Convert_numberASCIItoDATA(fifoTime.data);
+			UART_putChar(UART_0, ASCII_DIAG);
+
 		}
 		if(MONTH == flagType){
 			dataSetDate1.time.month = Convert_numberASCIItoDATA(fifoTime.data);
+			UART_putChar(UART_0, ASCII_DIAG);
+
 		}
-		if(DAY == flagType){
-			dataSetDate1.time.day = Convert_numberASCIItoDATA(fifoTime.data);
+		if(YEAR == flagType){
+			dataSetDate1.time.year = Convert_numberASCIItoDATA(fifoTime.data);
 			dataSetDate1.phaseState = 1;
 		}
 		clearFIFO_0();
 		clearUART0_mailbox();
-		UART_putChar(UART_0, ASCII_DIAG);
 
 		flagType++;
-		if(flagType > 2){flagType = YEAR;}
+		if(flagType > 2){flagType = DAY;}
 	}
 
 	dataSetDate1.stateMain = SET_DATE;
