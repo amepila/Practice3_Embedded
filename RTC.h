@@ -17,8 +17,15 @@
 #include "SPI.h"
 
 typedef enum {SUCCESS,MEMORYERROR} RTCErrorCode;
-typedef enum {AMFLAG,PMFLAG} AMPM;
+typedef enum {AMFLAG,PMFLAG} AMPM; //\enum Enum for the Am Pm flag control
+/*\brief Esta funcion regresa el valor actual de la bandera AMPM
+ * \return bandera actual en modo de 12 hrs
+ * */
 AMPM getAMPMFlag();
+/*\brief Esta funcion recibe un valor para la bandera de am pm usada en el modo de 12 hrs
+ * \param[AMPM] Recibe ya sea la bandera de AM o PM para ponerla como valor.
+ *
+ * */
 void setAMPMFlah(AMPM);
 void RTCdelay();
 /*\brief Esta funcion recibe un valor entero que se convierte en BCD para ser guardado en la parte de segundos del RTC.
@@ -117,5 +124,13 @@ uint8 BCDYearDec(uint8 BCD);
  * \param[delay] numero de ciclos que durara dentro del while
  * */
 void RTCdelay(uint32 delay);
+/*\brief set para la bandera que indica que no se encuentra la memoria
+ * \param[RTCErrorCode] tipo enum que 0 cuando no hay problema, 1 cuando existe error.
+ * */
+void setRTCError(RTCErrorCode);
+/*\brief get para la bandera de error 0 cuando no hay problema, 1 cuando existe error.
+ *
+ * */
+RTCErrorCode getRTCError(void);
 
 #endif /* RTC_H_ */

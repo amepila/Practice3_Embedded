@@ -117,7 +117,7 @@ int main(void){
 	/**General variables**/
 	static Time_Type realTimeClock;
 	realTimeClock.hour.format = FORMAT_24H;
-	realTimeClock.hour.period = PERIOD_AM;
+	realTimeClock.hour.period = NON_PERIOD;
 	realTimeClock.modifyDate = TRUE;
 	realTimeClock.modifyTime = TRUE;
 
@@ -151,11 +151,12 @@ int main(void){
 	UART4_interruptEnable(UART_4);
 	/**Enable all the interrupts **/
 	EnableInterrupts;
-	//menu_Main4();
     while(1){
+    	menu_Main4();
+
     	/**Machine states based on tags**/
-    	mainFunctions = StateProgram[currentState].stateFunction;
-    	currentState = mainFunctions(realTimeClock);
+    	//mainFunctions = StateProgram[currentState].stateFunction;
+    	//currentState = mainFunctions(realTimeClock);
     }
     return 0;
 }

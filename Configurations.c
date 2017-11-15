@@ -32,6 +32,7 @@ typedef enum{
 
 const uint8 ESC = 27;
 const uint8 CR = 13;
+const uint32 Medium_Hour = (0x12U);
 static Time_Type Clock;
 
 
@@ -132,40 +133,76 @@ void printTimeLCD(Time_Type time){
 
 	uint32 tmpHour;
 	/******************HOUR****************************/
-	if(FORMAT_24H == time.hour.format){
+	if(FORMAT_24H == Clock.hour.format){
 
 		LCDNokia_gotoXY(15,2);
 		LCDNokia_printValue(BCDHDec(readRTC_hour()));
 		LCDNokia_printValue(BCDUni(readRTC_hour()));
 		LCDNokia_sendChar(ASCII_DOUBLEPOINT);
 	}
-	if(FORMAT_12H == time.hour.format){
-		if(readRTC_hour() > (0x12)){
+	if(FORMAT_12H == Clock.hour.format){
+		if(readRTC_hour() > (Medium_Hour)){
 
 			tmpHour = readRTC_hour();
-			tmpHour -= (0x12);
+			tmpHour -= (Medium_Hour);
 
 			LCDNokia_gotoXY(15,2);
 			LCDNokia_printValue(BCDHDec(tmpHour));
 			LCDNokia_printValue(BCDUni(tmpHour));
 			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
-		}
-		if(readRTC_hour() == (0x12)){
-			LCDNokia_gotoXY(15,2);
-			LCDNokia_printValue(0);
-			LCDNokia_printValue(0);
+
+			LCDNokia_gotoXY(35,2);
+			LCDNokia_printValue(BCDDec(readRTC_min()));
+			LCDNokia_printValue(BCDUni(readRTC_min()));
 			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+			LCDNokia_gotoXY(55,2);
+			LCDNokia_printValue(BCDDec(readRTC_sec()));
+			LCDNokia_printValue(BCDUni(readRTC_sec()));
+
+			LCDNokia_gotoXY(35,3);
+			LCDNokia_sendChar('P');
+			LCDNokia_sendChar('M');
+		}
+		if(readRTC_hour() == (Medium_Hour)){
+			LCDNokia_gotoXY(15,2);
+			LCDNokia_printValue(1);
+			LCDNokia_printValue(2);
+			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+			LCDNokia_gotoXY(35,2);
+			LCDNokia_printValue(BCDDec(readRTC_min()));
+			LCDNokia_printValue(BCDUni(readRTC_min()));
+			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+			LCDNokia_gotoXY(55,2);
+			LCDNokia_printValue(BCDDec(readRTC_sec()));
+			LCDNokia_printValue(BCDUni(readRTC_sec()));
+
+			LCDNokia_gotoXY(35,3);
+			LCDNokia_sendChar('P');
+			LCDNokia_sendChar('M');
+		}
+		if(readRTC_hour() < (Medium_Hour)){
+			LCDNokia_gotoXY(15,2);
+			LCDNokia_printValue(BCDHDec(readRTC_hour()));
+			LCDNokia_printValue(BCDUni(readRTC_hour()));
+			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+			LCDNokia_gotoXY(35,2);
+			LCDNokia_printValue(BCDDec(readRTC_min()));
+			LCDNokia_printValue(BCDUni(readRTC_min()));
+			LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+			LCDNokia_gotoXY(55,2);
+			LCDNokia_printValue(BCDDec(readRTC_sec()));
+			LCDNokia_printValue(BCDUni(readRTC_sec()));
+
+			LCDNokia_gotoXY(35,3);
+			LCDNokia_sendChar('A');
+			LCDNokia_sendChar('M');
 		}
 	}
-
-	LCDNokia_gotoXY(35,2);
-	LCDNokia_printValue(BCDDec(readRTC_min()));
-	LCDNokia_printValue(BCDUni(readRTC_min()));
-	LCDNokia_sendChar(ASCII_DOUBLEPOINT);
-
-	LCDNokia_gotoXY(55,2);
-	LCDNokia_printValue(BCDDec(readRTC_sec()));
-	LCDNokia_printValue(BCDUni(readRTC_sec()));
 
 	/*******************DATE***************************/
 	LCDNokia_gotoXY(15,4);
@@ -181,21 +218,41 @@ void printTimeLCD(Time_Type time){
 	LCDNokia_gotoXY(55,4);
 	LCDNokia_printValue(BCDYearDec(readRTC_year()));
 	LCDNokia_printValue(BCDUni(readRTC_year()));
-
-	if(FORMAT_12H == time.hour.format){
-		if(readRTC_hour() > (0x12)){
-			LCDNokia_gotoXY(35,3);
-			LCDNokia_sendChar('P');
-			LCDNokia_sendChar('M');
-		}else{
-			LCDNokia_gotoXY(35,3);
-			LCDNokia_sendChar('A');
-			LCDNokia_sendChar('M');
-		}
-	}
 }
+
 void printHourUART(Time_Type time){
 
+	uint32 partDecHour;
+	uint32 partUnHour;
+	uint32 partDecMinutes;
+	uint32 partUnMinutes;
+	uint32 partDecSeconds;
+	uint32 partUnSeconds;
+	uint8 date[6];
+
+	partDecHour = time.hour.hour / 10;
+	partUnHour = time.hour.hour % 10;
+	date[0] = '0' + partDecHour;
+	date[1] = '0' + partUnHour;
+
+	partDecMinutes = time.hour.minutes / 10;
+	partUnMinutes = time.hour.minutes % 10;
+	date[2] = '0' + partDecMinutes;
+	date[3] = '0' + partUnMinutes;
+
+	partDecSeconds = time.hour.seconds / 10;
+	partUnSeconds = time.hour.seconds % 10;
+	date[4] = '0' + partDecSeconds;
+	date[5] = '0' + partUnSeconds;
+
+	UART_putChar(UART_0, date[0]);
+	UART_putChar(UART_0, date[1]);
+	UART_putChar(UART_0, ASCII_DOUBLEPOINT);
+	UART_putChar(UART_0, date[2]);
+	UART_putChar(UART_0, date[3]);
+	UART_putChar(UART_0, ASCII_DOUBLEPOINT);
+	UART_putChar(UART_0, date[4]);
+	UART_putChar(UART_0, date[5]);
 }
 
 void printDateUART(Time_Type time){
@@ -668,59 +725,19 @@ StateFormat_Type stateFinalFormat(StateFormat_Type data){
 StateReadHour_Type stateReadTime(StateReadHour_Type data){
 
 	static StateReadHour_Type dataReadTime1;
-	static uint32 hourPartD;
-	static uint32 minPartD;
-	static uint32 secPartD;
-	static uint32 hourPartU;
-	static uint32 minPartU;
-	static uint32 secPartU;
-	static uint8 time[6];
+	static uint32 flagLock = FALSE;
+	Time_Type realTime;
 
-	hourPartD = BCDHDec(readRTC_hour());
-	minPartD = BCDHDec(readRTC_min());
-	secPartD = BCDHDec(readRTC_sec());
-	hourPartU = BCDUni(readRTC_hour());
-	minPartU = BCDUni(readRTC_min());
-	secPartU = BCDUni(readRTC_sec());
-
-	if(getUART0_mailBox() != CR){
-/*
-		hourPartU %= 10;
-		hourPartD /= 10;
-
-		minPartU %= 10;
-		minPartD /= 10;
-
-		secPartU %= 10;
-		secPartD /= 10;
-*/
-		time[0] = hourPartU + 48;
-		time[1] = hourPartD + 48;
-		time[2] = minPartU + 48;
-		time[3] = minPartD + 48;
-		time[4] = secPartU + 48;
-		time[5] = secPartD + 48;
-
-		if(FALSE == data.flagBlock){
-
-			UART_putString(UART_0,"\033[14;10H");
-			UART_putChar(UART_0, time[0]);
-			UART_putChar(UART_0, time[1]);
-
-			UART_putChar(UART_0,ASCII_DOUBLEPOINT);
-			UART_putChar(UART_0, time[2]);
-			UART_putChar(UART_0, time[3]);
-
-			UART_putChar(UART_0,ASCII_DOUBLEPOINT);
-			UART_putChar(UART_0, time[4]);
-			UART_putChar(UART_0, time[5]);
-
-			data.flagBlock = TRUE;
-		}
-		dataReadTime1.phaseState = 0;
+	if(FALSE == flagLock){
+		realTime = getTime();
+		printHourUART(realTime);
+		flagLock = TRUE;
 	}
+	dataReadTime1.phaseState = 0;
+
 	if(getUART0_mailBox() == CR){
-		dataReadTime1.phaseState = 0;
+		dataReadTime1.phaseState = 1;
+		flagLock = FALSE;
 	}
 
 	dataReadTime1.stateMain = READ_HOUR;
@@ -1083,24 +1100,26 @@ States_MenuType stateReadHour(Time_Type realTime){
 
 	static uint32 phase = 0;
 	static uint32 flagUART0 = FALSE;
+	static uint32 flagLock = FALSE;
 	static StateReadHour_Type stateReadHour;
 	StateReadHour_Type(*readHourFunctions)(StateReadHour_Type);
 	stateReadHour.stateMain = READ_HOUR;
-
-	printTimeLCD(Clock);
-	stateReadHour.hour = realTime.hour.hour;
-	stateReadHour.minutes = realTime.hour.minutes;
-	stateReadHour.seconds = realTime.hour.seconds;
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadHour(phase);
 	}
 	if(phase == 0){
-		readHourFunctions = statesReadHour[phase].StateReadHour;
-		stateReadHour = readHourFunctions(stateReadHour);
+		if(FALSE == flagLock){
+			readHourFunctions = statesReadHour[phase].StateReadHour;
+			stateReadHour = readHourFunctions(stateReadHour);
+			flagLock = TRUE;
+		}
 	}
 	if(phase == 1){
+		readHourFunctions = statesReadHour[phase].StateReadHour;
+		stateReadHour = readHourFunctions(stateReadHour);
 		stateReadHour.phaseState = 0;
+		flagLock = FALSE;
 		flagUART0 = FALSE;
 	}
 	if(getUART0_flag()){
@@ -1110,7 +1129,6 @@ States_MenuType stateReadHour(Time_Type realTime){
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
-
 	phase = stateReadHour.phaseState;
 	return (stateReadHour.stateMain);
 }

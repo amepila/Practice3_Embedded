@@ -11,6 +11,14 @@
 #define READCONTROL 0xA3
 AMPM AMPMFlag;
 
+RTCErrorCode Code;
+
+void setRTCError(RTCErrorCode code){
+	Code=code;
+}
+RTCErrorCode getRTCError(){
+	return Code;
+}
 
 void setRTC_sec(uint8 sec){
 	if(sec>60){
@@ -220,6 +228,10 @@ uint8 readRTC_sec(){
 
 	I2C_stop();// Generating stop signal
 	dummy=I2C_read_Byte();
+	if(dummy>0x70){
+		setRTCError(MEMORYERROR);
+	}
+
 	return dummy;
 
 
