@@ -228,31 +228,74 @@ void printHourUART(Time_Type time){
 	uint32 partUnMinutes;
 	uint32 partDecSeconds;
 	uint32 partUnSeconds;
-	uint8 date[6];
+	static uint8 date[6];
+	static uint32 comparValues[6];
+	static LockFlags_Type lock;
 
 	partDecHour = time.hour.hour / 10;
 	partUnHour = time.hour.hour % 10;
-	date[0] = '0' + partDecHour;
+	if(0 == partDecHour){
+		date[0] = '0';
+	}else{
+		date[0] = '0' + partDecHour;
+	}
 	date[1] = '0' + partUnHour;
 
 	partDecMinutes = time.hour.minutes / 10;
 	partUnMinutes = time.hour.minutes % 10;
-	date[2] = '0' + partDecMinutes;
+	if(0 == partDecMinutes){
+		date[2] = '0';
+	}else{
+		date[2] = '0' + partDecMinutes;
+	}
 	date[3] = '0' + partUnMinutes;
 
 	partDecSeconds = time.hour.seconds / 10;
 	partUnSeconds = time.hour.seconds % 10;
-	date[4] = '0' + partDecSeconds;
+	if(0 == partDecSeconds){
+		date[4] = '0';
+	}else{
+		date[4] = '0' + partDecSeconds;
+	}
 	date[5] = '0' + partUnSeconds;
 
-	UART_putChar(UART_0, date[0]);
-	UART_putChar(UART_0, date[1]);
-	UART_putChar(UART_0, ASCII_DOUBLEPOINT);
-	UART_putChar(UART_0, date[2]);
-	UART_putChar(UART_0, date[3]);
-	UART_putChar(UART_0, ASCII_DOUBLEPOINT);
-	UART_putChar(UART_0, date[4]);
-	UART_putChar(UART_0, date[5]);
+	if(FALSE == lock.flag1){
+		if((FALSE == lock.flag2) && (comparValues[0] != partDecHour)){
+			UART_putChar(UART_0, date[0]);
+			lock.flag2 = TRUE;
+		}
+		if((FALSE == lock.flag3) && (comparValues[1] != partUnHour)){
+			UART_putChar(UART_0, date[1]);
+			lock.flag3 = TRUE;
+		}
+		UART_putChar(UART_0, ASCII_DOUBLEPOINT);
+		if((FALSE == lock.flag4) && (comparValues[2] != partDecMinutes)){
+			UART_putChar(UART_0, date[2]);
+			lock.flag3 = TRUE;
+		}
+		if((FALSE == lock.flag5) && (comparValues[3] != partUnMinutes)){
+			UART_putChar(UART_0, date[3]);
+			lock.flag4 = TRUE;
+		}
+		UART_putChar(UART_0, ASCII_DOUBLEPOINT);
+		if((FALSE == lock.flag6) && (comparValues[4] != partDecSeconds)){
+			UART_putChar(UART_0, date[4]);
+			lock.flag5 = TRUE;
+		}
+		if((FALSE == lock.flag7) && (comparValues[5] != partUnSeconds)){
+			UART_putChar(UART_0, date[5]);
+			lock.flag6 = TRUE;
+		}
+		comparValues[0] = partDecHour;
+		comparValues[1] = partUnHour;
+		comparValues[2] = partDecMinutes;
+		comparValues[3] = partUnMinutes;
+		comparValues[4] = partDecSeconds;
+		comparValues[5] = partUnSeconds;
+
+		UART_putString(UART_0,"\033[10;34H");
+		lock.flag1 = TRUE;
+	}
 }
 
 void printDateUART(Time_Type time){

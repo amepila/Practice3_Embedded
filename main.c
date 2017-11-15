@@ -150,13 +150,13 @@ int main(void){
 	UART0_interruptEnable(UART_0);
 	UART4_interruptEnable(UART_4);
 	/**Enable all the interrupts **/
-	EnableInterrupts;
+	//EnableInterrupts;
     while(1){
     	menu_Main4();
 
     	/**Machine states based on tags**/
-    	//mainFunctions = StateProgram[currentState].stateFunction;
-    	//currentState = mainFunctions(realTimeClock);
+    	mainFunctions = StateProgram[currentState].stateFunction;
+    	currentState = mainFunctions(realTimeClock);
     }
     return 0;
 }

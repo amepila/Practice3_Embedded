@@ -51,6 +51,18 @@ typedef struct{
 	uint32	day;
 }Date_Type;
 
+
+typedef struct{
+	uint32 flag1 : 1;
+	uint32 flag2 : 1;
+	uint32 flag3 : 1;
+	uint32 flag4 : 1;
+	uint32 flag5 : 1;
+	uint32 flag6 : 1;
+	uint32 flag7 : 1;
+	uint32 flag8 : 1;
+}LockFlags_Type;
+
 typedef struct{
 	Hour_Type hour;
 	Date_Type date;
