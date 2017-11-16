@@ -148,14 +148,11 @@ int main(void){
 	UART0_interruptEnable(UART_0);
 	UART1_interruptEnable(UART_1);
 	menu_Main1();
-	//UART_putString(UART_1,"\033[10;10H");
-	//UART_putString(UART_1, "MENU PRINCIPAL\r");
 
 	/**Enable all the interrupts **/
 	EnableInterrupts;
 
     while(1){
-
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;
     	currentState = mainFunctions(realTimeClock);

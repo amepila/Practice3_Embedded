@@ -550,6 +550,14 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	static uint32 counterTime = 0;
 	static FIFO_Type fifoTime;
 	static FlagHour_Type flagType = HOUR;
+	static uint32 lockSetHour = FALSE;
+	static uint32 flagButton = FALSE;
+	static Time_Type time;
+
+	if(FALSE == lockSetHour){
+		time = getTime();
+		lockSetHour = TRUE;
+	}
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -564,6 +572,61 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	if(counterTime == 2){
 		counterTime = 0;
 		dataSet1.phaseState = 0;
+	}
+	/****************Push Buttons**********************/
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_0))){
+		time.hour.hour++;
+		if(FORMAT_12H == Clock.hour.format){
+			if(time.hour.hour == 13){
+				time.hour.hour = 1;
+				time.hour.format = FORMAT_12H;
+				if(PERIOD_AM == Clock.hour.period){
+					time.hour.period = PERIOD_AM;
+				}
+				if(PERIOD_PM == Clock.hour.period){
+					time.hour.period = PERIOD_PM;
+				}
+			}
+		}
+		if(FORMAT_24H == Clock.hour.format){
+			time.hour.format = FORMAT_24H;
+			if(time.hour.hour == 25){time.hour.hour = 0;}
+		}
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_0);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_1))){
+		time.hour.minutes++;
+		if(time.hour.minutes == 60){time.hour.minutes = 0;}
+
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_1);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_2))){
+		time.hour.seconds++;
+		if(time.hour.seconds == 60){time.hour.seconds = 0;}
+		flagButton = TRUE;
+
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_2);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_3))){
+
+		if(flagButton == TRUE){
+			time.modifyTime = TRUE;
+			setTimeLCD(time);
+			flagButton = FALSE;
+		}
+		time.modifyTime = FALSE;
+		lockSetHour = FALSE;
+		dataSet1.phaseState = 1;
+		FlagButton = TRUE;
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_3);
+		GPIO_clearIRQStatus(GPIO_C);
 	}
 	/******************Detector CR********************/
 	if(getUART0_mailBox() == CR){
@@ -613,14 +676,19 @@ StateSetHour_Type stateSaveTime(StateSetHour_Type data){
 	static StateSetHour_Type dataSet2;
 	Time_Type time;
 
-	time.hour.period = data.time.period;
-	time.hour.hour = data.time.hour;
-	time.hour.minutes = data.time.minutes;
-	time.hour.seconds = data.time.seconds;
-	time.modifyTime = TRUE;
-	time.hour.format = data.time.format;
+	if(FALSE == FlagButton){
+		time.hour.period = data.time.period;
+		time.hour.hour = data.time.hour;
+		time.hour.minutes = data.time.minutes;
+		time.hour.seconds = data.time.seconds;
+		time.modifyTime = TRUE;
+		time.hour.format = data.time.format;
 
-	setTimeLCD(time);
+		setTimeLCD(time);
+	}
+	if(TRUE == FlagButton){
+		FlagButton = FALSE;
+	}
 
 	dataSet2.stateMain = SET_HOUR;
 	dataSet2.phaseState = 2;
@@ -644,9 +712,6 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 	static FlagDate_Type flagType= DAY;
 	static uint32 lockSetDate = FALSE;
 	static uint32 flagButton = FALSE;
-	static uint32 flagButton1 = FALSE;
-	static uint32 flagButton2 = FALSE;
-	static uint32 flagButton3 = FALSE;
 	static Time_Type time;
 
 	if(FALSE == lockSetDate){
@@ -691,18 +756,14 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 	}
 	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_1))){
 		time.date.month++;
-		if(time.date.month == 13){
-			time.date.month = 0;
-		}
+		if(time.date.month == 13){time.date.month = 0;}
 		/**Clear interrupts**/
 		Button_clearFlag(BUTTON_1);
 		GPIO_clearIRQStatus(GPIO_C);
 	}
 	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_2))){
 		time.date.year++;
-		if(time.date.year == 99){
-			time.date.year = 0;
-		}
+		if(time.date.year == 99){time.date.year = 0;}
 		flagButton = TRUE;
 		/**Clear interrupts**/
 		Button_clearFlag(BUTTON_2);
@@ -1153,7 +1214,7 @@ States_MenuType stateSetHour(Time_Type realTime){
 		state_SetHour = setHourFunctions(dataMemory_SetHour);
 	}
 
-	if(getUART0_flag()){
+	if((getUART0_flag()) || (TRUE == GPIO_getIRQStatus(GPIO_C))){
 		setHourFunctions = statesSetHour[phase].StateSetHour;
 		state_SetHour = setHourFunctions(state_SetHour);
 
