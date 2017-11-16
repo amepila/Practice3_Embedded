@@ -34,6 +34,7 @@ const uint8 ESC = 27;
 const uint8 CR = 13;
 const uint32 Medium_Hour = (0x12U);
 static Time_Type Clock;
+static uint32 FlagButton = FALSE;
 
 
 /******************States********************************************/
@@ -99,32 +100,65 @@ void setTimeLCD(Time_Type time){
 		setRTC_min((uint8)time.hour.minutes);
 		setRTC_hour((uint8)time.hour.hour);
 
-		Clock = time;
 		time.modifyTime= FALSE;
+		Clock = time;
 	}
 	if(TRUE == time.modifyDate){
 		setRTC_day((uint8)time.date.day);
 		setRTC_month((uint8)time.date.month);
 		setRTC_year((uint8)time.date.year);
 
-		Clock = time;
 		time.modifyDate = FALSE;
+		Clock = time;
 	}
-
 }
 
 Time_Type getTime(void){
 	Time_Type realTime;
 
-	realTime.hour.hour = readRTC_hour();
-	realTime.hour.minutes = readRTC_min();
-	realTime.hour.seconds = readRTC_sec();
+	uint32 decHour;
+	uint32 unHour;
+	uint32 decMin;
+	uint32 unMin;
+	uint32 decSec;
+	uint32 unSec;
+	uint32 decYear;
+	uint32 unYear;
+	uint32 decMonth;
+	uint32 unMonth;
+	uint32 decDay;
+	uint32 unDay;
+
+	decHour = BCDHDec(readRTC_hour());
+	unHour = BCDUni(readRTC_hour());
+	decMin = BCDDec(readRTC_min());
+	unMin = BCDUni(readRTC_min());
+	decSec = BCDDec(readRTC_sec());
+	unSec = BCDUni(readRTC_sec());
+
+	decYear = BCDYearDec(readRTC_year());
+	unYear = BCDUni(readRTC_year());
+	decMonth = BCDMonthDec(readRTC_month());
+	unMonth = BCDUni(readRTC_month());
+	decDay = BCDDayDec(readRTC_day());
+	unDay = BCDUni(readRTC_day());
+
+	decHour *= 10;
+	decMin *= 10;
+	decSec *= 10;
+	decYear *= 10;
+	decMonth *= 10;
+	decDay *= 10;
+
+	realTime.hour.hour = decHour + unHour;
+	realTime.hour.minutes = decMin + unMin;
+	realTime.hour.seconds = decSec + unSec;
 	realTime.hour.format = Clock.hour.format;
 	realTime.hour.period = Clock.hour.period;
 
-	realTime.date.year = readRTC_year();
-	realTime.date.month = readRTC_month();
-	realTime.date.day = readRTC_day();
+	realTime.date.year = decYear + unYear;
+	realTime.date.month = decMonth + unMonth;
+	realTime.date.day = decDay + unDay;
 
 	return (realTime);
 }
@@ -136,9 +170,24 @@ void printTimeLCD(Time_Type time){
 	if(FORMAT_24H == Clock.hour.format){
 
 		LCDNokia_gotoXY(15,2);
+		delay(6500);
 		LCDNokia_printValue(BCDHDec(readRTC_hour()));
 		LCDNokia_printValue(BCDUni(readRTC_hour()));
 		LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+		LCDNokia_gotoXY(35,2);
+		LCDNokia_printValue(BCDDec(readRTC_min()));
+		LCDNokia_printValue(BCDUni(readRTC_min()));
+		LCDNokia_sendChar(ASCII_DOUBLEPOINT);
+
+		LCDNokia_gotoXY(55,2);
+		LCDNokia_printValue(BCDDec(readRTC_sec()));
+		LCDNokia_printValue(BCDUni(readRTC_sec()));
+
+		LCDNokia_gotoXY(35,3);
+		LCDNokia_sendChar(' ');
+		LCDNokia_sendChar(' ');
+
 	}
 	if(FORMAT_12H == Clock.hour.format){
 		if(readRTC_hour() > (Medium_Hour)){
@@ -593,6 +642,17 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 	static uint32 counterDate = 0;
 	static FIFO_Type fifoTime;
 	static FlagDate_Type flagType= DAY;
+	static uint32 lockSetDate = FALSE;
+	static uint32 flagButton = FALSE;
+	static uint32 flagButton1 = FALSE;
+	static uint32 flagButton2 = FALSE;
+	static uint32 flagButton3 = FALSE;
+	static Time_Type time;
+
+	if(FALSE == lockSetDate){
+		time = getTime();
+		lockSetDate = TRUE;
+	}
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -608,6 +668,62 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 		counterDate = 0;
 		dataSetDate1.phaseState = 0;
 	}
+	/****************Push buttons*********************/
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_0))){
+		time.date.day++;
+		if((time.date.month == 1) || (time.date.month == 3) || (time.date.month == 5)
+			|| (time.date.month == 7) || (time.date.month == 8) || (time.date.month == 10) || (time.date.month == 12))
+		{
+			if(time.date.day == 32){ time.date.day = 0;}
+		}
+		if((time.date.month == 4) || (time.date.month == 6) || (time.date.month == 9) || (time.date.month == 11))
+		{
+			if(time.date.day == 31){ time.date.day = 0;}
+		}
+		if(time.date.month == 2)
+		{
+			if(time.date.day == 29){ time.date.day = 0;}
+		}
+
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_0);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_1))){
+		time.date.month++;
+		if(time.date.month == 13){
+			time.date.month = 0;
+		}
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_1);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_2))){
+		time.date.year++;
+		if(time.date.year == 99){
+			time.date.year = 0;
+		}
+		flagButton = TRUE;
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_2);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
+	if((TRUE == GPIO_getIRQStatus(GPIO_C)) && (TRUE == Button_getFlag(BUTTON_3))){
+
+		if(flagButton == TRUE){
+			time.modifyDate = TRUE;
+			setTimeLCD(time);
+			flagButton = FALSE;
+		}
+		time.modifyDate = FALSE;
+		lockSetDate = FALSE;
+		dataSetDate1.phaseState = 1;
+		FlagButton = TRUE;
+
+		/**Clear interrupts**/
+		Button_clearFlag(BUTTON_3);
+		GPIO_clearIRQStatus(GPIO_C);
+	}
 
 	/******************Detector CR********************/
 	if(getUART0_mailBox() == CR){
@@ -618,7 +734,6 @@ StateSetDate_Type stateSetCalendar(StateSetDate_Type data){
 		if(DAY == flagType){
 			dataSetDate1.time.day = Convert_numberASCIItoDATA(fifoTime.data);
 			UART_putChar(UART_0, ASCII_DIAG);
-
 		}
 		if(MONTH == flagType){
 			dataSetDate1.time.month = Convert_numberASCIItoDATA(fifoTime.data);
@@ -645,12 +760,16 @@ StateSetDate_Type stateSaveDate(StateSetDate_Type data){
 	static StateSetDate_Type dataSetDate2;
 	Time_Type time;
 
-	time.date.day = data.time.day;
-	time.date.month = data.time.month;
-	time.date.year = data.time.year;
-	time.modifyDate = TRUE;
-
-	setTimeLCD(time);
+	if(FALSE == FlagButton){
+		time.date.day = data.time.day;
+		time.date.month = data.time.month;
+		time.date.year = data.time.year;
+		time.modifyDate = TRUE;
+		setTimeLCD(time);
+	}
+	if(TRUE == FlagButton){
+		FlagButton = FALSE;
+	}
 
 	dataSetDate2.stateMain = SET_DATE;
 	dataSetDate2.phaseState = 2;
@@ -772,8 +891,7 @@ StateReadHour_Type stateReadTime(StateReadHour_Type data){
 	Time_Type realTime;
 
 	if(FALSE == flagLock){
-		realTime = getTime();
-		printHourUART(realTime);
+		printHourUART(getTime());
 		flagLock = TRUE;
 	}
 	dataReadTime1.phaseState = 0;
@@ -881,7 +999,6 @@ States_MenuType stateMenu(Time_Type realTime){
 	printTimeLCD(realTime);
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
-	if(FALSE == flagUART4){flagUART4 = menu_Main4();}
 
 	if(getUART0_flag()){
 		if(getUART0_mailBox() != CR){
@@ -1079,7 +1196,7 @@ States_MenuType stateSetDate(Time_Type realTime){
 		state_SetDate = setDateFunctions(dataMemory_SetDate);
 	}
 
-	if(getUART0_flag()){
+	if((getUART0_flag()) || (TRUE == GPIO_getIRQStatus(GPIO_C))){
 		setDateFunctions = statesSetDate[phase].StateSetDate;
 		state_SetDate = setDateFunctions(state_SetDate);
 

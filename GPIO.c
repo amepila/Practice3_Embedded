@@ -31,38 +31,6 @@ uint32 valuePIN(uint8 bit){
 	}
 }
 
-void PORTA_IRQHandler()
-{
-	GPIO_readInterrupt(GPIO_A);
-
-	if((1<<BIT1) == GPIO_readInterrupt(GPIO_A)){
-		GPIO_intrStatusFlag.flagPortA  = TRUE;
-		Button_statusFlag(GPIO_A,BIT1);
-	}
-	if((1<<BIT2) == GPIO_readInterrupt(GPIO_A)){
-		GPIO_intrStatusFlag.flagPortA  = TRUE;
-		Button_statusFlag(GPIO_A,BIT2);
-	}
-
-	GPIO_clearInterrupt(GPIO_A);
-}
-
-void PORTB_IRQHandler()
-{
-	GPIO_readInterrupt(GPIO_B);
-
-	if((1<<BIT9) == GPIO_readInterrupt(GPIO_B)){
-		GPIO_intrStatusFlag.flagPortB  = TRUE;
-		Button_statusFlag(GPIO_B,BIT9);
-	}
-	if((1<<BIT23) == GPIO_readInterrupt(GPIO_B)){
-		GPIO_intrStatusFlag.flagPortB  = TRUE;
-		Button_statusFlag(GPIO_B,BIT23);
-	}
-
-	GPIO_clearInterrupt(GPIO_B);
-}
-
 void PORTC_IRQHandler()
 {
 	GPIO_readInterrupt(GPIO_C);
@@ -71,34 +39,25 @@ void PORTC_IRQHandler()
 		GPIO_intrStatusFlag.flagPortC  = TRUE;
 		Button_statusFlag(GPIO_C,BIT2);
 	}
-	if((1<<BIT3) == GPIO_readInterrupt(GPIO_C)){
+	if((1<<BIT5) == GPIO_readInterrupt(GPIO_C)){
 		GPIO_intrStatusFlag.flagPortC  = TRUE;
-		Button_statusFlag(GPIO_C,BIT3);
+		Button_statusFlag(GPIO_C,BIT5);
 	}
-	GPIO_intrStatusFlag.flagPortC  = TRUE;
+	if((1<<BIT7) == GPIO_readInterrupt(GPIO_C)){
+		GPIO_intrStatusFlag.flagPortC  = TRUE;
+		Button_statusFlag(GPIO_C,BIT7);
+	}
+	if((1<<BIT0) == GPIO_readInterrupt(GPIO_C)){
+		GPIO_intrStatusFlag.flagPortC  = TRUE;
+		Button_statusFlag(GPIO_C,BIT0);
+	}
 
-
+	//GPIO_intrStatusFlag.flagPortC  = TRUE;
 	GPIO_clearInterrupt(GPIO_C);
 }
 
-void PORTD_IRQHandler()
-{
-	GPIO_intrStatusFlag.flagPortD  = TRUE;
-	GPIO_readInterrupt(GPIO_D);
-	GPIO_clearInterrupt(GPIO_D);
-}
-
-void PORTE_IRQHandler()
-{
-	GPIO_intrStatusFlag.flagPortE  = TRUE;
-	GPIO_readInterrupt(GPIO_E);
-	GPIO_clearInterrupt(GPIO_E);
-}
-
-
 uint8 GPIO_getIRQStatus(GPIO_portNameType gpio)
 {
-
 	switch (gpio) {
 		case GPIO_A:
 			return(GPIO_intrStatusFlag.flagPortA);
@@ -119,7 +78,6 @@ uint8 GPIO_getIRQStatus(GPIO_portNameType gpio)
 			return(ERROR);
 			break;
 	}
-
 }
 
 uint8 GPIO_clearIRQStatus(GPIO_portNameType gpio)
@@ -145,9 +103,7 @@ uint8 GPIO_clearIRQStatus(GPIO_portNameType gpio)
 			return(ERROR);
 			break;
 	}
-
 	return(TRUE);
-
 }
 
 uint32 GPIO_readInterrupt(GPIO_portNameType portName){

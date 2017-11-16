@@ -403,36 +403,36 @@ uint8 menu_EcoLCD(uint8 phase){
 	}
 }
 
-uint8 menu_Main4(void){
+uint8 menu_Main1(void){
 
 	/**The following sentences send strings to PC using the UART_putString function. Also, the string
 	 * is coded with terminal code*/
 
 	/*VT100 command for clearing the screen*/
-	UART_putString(UART_4,"\033[2J");
+	UART_putString(UART_1,"\033[2J");
 	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_4,"\033[10;10H");
-	UART_putString(UART_4, "MENU PRINCIPAL\r");
-	UART_putString(UART_4,"\033[11;10H");
-	UART_putString(UART_4, "1) Leer memoria I2C\r");
-	UART_putString(UART_4,"\033[12;10H");
-	UART_putString(UART_4, "2) Escribir memoria I2C\r");
-	UART_putString(UART_4,"\033[13;10H");
-	UART_putString(UART_4, "3) Establecer hora\r");
-	UART_putString(UART_4,"\033[14;10H");
-	UART_putString(UART_4, "4) Establecer fecha\r");
-	UART_putString(UART_4,"\033[15;10H");
-	UART_putString(UART_4, "5) Formato de hora\r");
-	UART_putString(UART_4,"\033[16;10H");
-	UART_putString(UART_4, "6) Leer hora\r");
-	UART_putString(UART_4,"\033[17;10H");
-	UART_putString(UART_4, "7) Leer fecha\r");
-	UART_putString(UART_4,"\033[18;10H");
-	UART_putString(UART_4, "8) Comunicacion con terminal 2\r");
-	UART_putString(UART_4,"\033[19;10H");
-	UART_putString(UART_4, "9) Eco en LCD\r");
+	UART_putString(UART_1,"\033[10;10H");
+	UART_putString(UART_1, "MENU PRINCIPAL\r");
+	UART_putString(UART_1,"\033[11;10H");
+	UART_putString(UART_1, "1) Leer memoria I2C\r");
+	UART_putString(UART_1,"\033[12;10H");
+	UART_putString(UART_1, "2) Escribir memoria I2C\r");
+	UART_putString(UART_1,"\033[13;10H");
+	UART_putString(UART_1, "3) Establecer hora\r");
+	UART_putString(UART_1,"\033[14;10H");
+	UART_putString(UART_1, "4) Establecer fecha\r");
+	UART_putString(UART_1,"\033[15;10H");
+	UART_putString(UART_1, "5) Formato de hora\r");
+	UART_putString(UART_1,"\033[16;10H");
+	UART_putString(UART_1, "6) Leer hora\r");
+	UART_putString(UART_1,"\033[17;10H");
+	UART_putString(UART_1, "7) Leer fecha\r");
+	UART_putString(UART_1,"\033[18;10H");
+	UART_putString(UART_1, "8) Comunicacion con terminal 2\r");
+	UART_putString(UART_1,"\033[19;10H");
+	UART_putString(UART_1, "9) Eco en LCD\r");
 	/** VT100 command for positioning the cursor in x and y position*/
-	UART_putString(UART_4,"\033[20;10H");
+	UART_putString(UART_1,"\033[20;10H");
 
 	return TRUE;
 }

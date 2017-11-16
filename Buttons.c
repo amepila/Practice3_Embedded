@@ -81,33 +81,25 @@ void Button_statusFlag(GPIO_portNameType gpio, BitsType bit){
 	/*Selector of Port*/
 	switch(gpio){
 	case GPIO_A:
-		if(BIT1 == bit){
-			/**Flag Button4 is set**/
-			Button_Pressed.flagButton4 = TRUE;
-		}
-		if(BIT2 == bit){
-			/**Flag Button2 is set**/
-			Button_Pressed.flagButton2 = TRUE;
-		}
 		break;
 	case GPIO_B:
-		if(BIT9 == bit){
-			/**Flag Button5 is set**/
-			Button_Pressed.flagButton5 = TRUE;
-		}
-		if(BIT23 == bit){
-			/**Flag Button3 is set**/
-			Button_Pressed.flagButton3 = TRUE;
-		}
 		break;
 	case GPIO_C:
 		if(BIT2 == bit){
+			/**Flag Button0 is set**/
+			Button_Pressed.flagButton0 = TRUE;
+		}
+		if(BIT5 == bit){
 			/**Flag Button1 is set**/
 			Button_Pressed.flagButton1 = TRUE;
 		}
-		if(BIT3 == bit){
-			/**Flag Button0 is set**/
-			Button_Pressed.flagButton0 = TRUE;
+		if(BIT7 == bit){
+			/**Flag Button2 is set**/
+			Button_Pressed.flagButton2 = TRUE;
+		}
+		if(BIT0 == bit){
+			/**Flag Button3 is set**/
+			Button_Pressed.flagButton3 = TRUE;
 		}
 		break;
 	case GPIO_D:
@@ -192,7 +184,7 @@ void Buttons_init(const Button_ConfigType* Button_Config){
 	uint8 counter;
 
 	/**Loop that set up each button**/
-	for(counter = 0; counter < 6; counter++){
+	for(counter = 0; counter < 4; counter++){
 		/**Set the clock of button**/
 		Button_clock(Button_Config[counter].Button_Port);
 		/**Set the button like output**/

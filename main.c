@@ -57,13 +57,11 @@
 #define INIT_MOD		(0.80F)
 
 /**Set of pin of Buttons**/
-const Button_ConfigType Buttons_Config[6] = {
-							{PORT_C,BIT3},	/**Button 1**/
-							{PORT_C,BIT2},	/**Button 2**/
-							{PORT_A,BIT2},	/**Button 3**/
-							{PORT_B,BIT23},	/**Button 4**/
-							{PORT_A,BIT1},	/**Button 5**/
-							{PORT_B,BIT9}	/**Button 6**/
+const Button_ConfigType Buttons_Config[4] = {
+							{PORT_C,BIT2},	/**Button 1**/
+							{PORT_C,BIT5},	/**Button 2**/
+							{PORT_C,BIT7},	/**Button 3**/
+							{PORT_C,BIT0}   /**Button 4**/
 };
 
 /**Settings of SPI**/
@@ -136,23 +134,27 @@ int main(void){
 	NVIC_setBASEPRI_threshold(PRIORITY_10);
 
 	/**Set the priority**/
-	NVIC_enableInterruptAndPriotity(PORTA_IRQ, PRIORITY_8);
-	NVIC_enableInterruptAndPriotity(PORTB_IRQ, PRIORITY_8);
-	NVIC_enableInterruptAndPriotity(PORTC_IRQ, PRIORITY_8);
+	NVIC_enableInterruptAndPriotity(PORTA_IRQ, PRIORITY_5);
+	NVIC_enableInterruptAndPriotity(PORTB_IRQ, PRIORITY_5);
+	NVIC_enableInterruptAndPriotity(PORTC_IRQ, PRIORITY_5);
 	NVIC_enableInterruptAndPriotity(UART0_IRQ, PRIORITY_9);
-	NVIC_enableInterruptAndPriotity(UART4_IRQ, PRIORITY_9);
+	NVIC_enableInterruptAndPriotity(UART1_IRQ, PRIORITY_9);
 
 	/**Configures UART 0 to transmit/receive at 115200 bauds with a 60 MHz of clock core*/
 	UART0_init(UART_0, 60000000, BD_115200);
 	/**Configures UART 1 to transmit/receive at 9600 bauds in Bluetooth with a 60 MHz of clock core*/
-	UART4_init(UART_4, 30000000, BD_9600);
+	UART1_init(UART_1, 60000000, BD_9600);
 	/**Enables the UART interrupts*/
 	UART0_interruptEnable(UART_0);
-	UART4_interruptEnable(UART_4);
+	UART1_interruptEnable(UART_1);
+	menu_Main1();
+	//UART_putString(UART_1,"\033[10;10H");
+	//UART_putString(UART_1, "MENU PRINCIPAL\r");
+
 	/**Enable all the interrupts **/
-	//EnableInterrupts;
+	EnableInterrupts;
+
     while(1){
-    	menu_Main4();
 
     	/**Machine states based on tags**/
     	mainFunctions = StateProgram[currentState].stateFunction;

@@ -10,10 +10,10 @@
 
 /*Global variable that saves the info*/
 UART_MailBoxType UART0_MailBox;
-UART_MailBoxType UART4_MailBox;
+UART_MailBoxType UART1_MailBox;
 
 FIFO_Type FIFO_UART0;
-FIFO_Type FIFO_UART4;
+FIFO_Type FIFO_UART1;
 
 /*Table of BRFD. Range 0:31 */
 const float BRFD_Type[32] = {
@@ -33,13 +33,13 @@ void UART0_RX_TX_IRQHandler (void){
 
 }
 
-void UART4_RX_TX_IRQHandler (void){
+void UART1_RX_TX_IRQHandler (void){
 	/*First is verified if the serial port finished to transmit*/
-	while(!(UART4->S1 & UART_S1_RDRF_MASK));
+	while(!(UART1->S1 & UART_S1_RDRF_MASK));
 	/*The info is saved in Data Register*/
-	UART4_MailBox.mailBox = UART4->D;
+	UART1_MailBox.mailBox = UART1->D;
 	/*There are new data*/
-	UART4_MailBox.flag = 1;
+	UART1_MailBox.flag = 1;
 
 }
 
@@ -49,9 +49,9 @@ uint8 getUART0_mailBox(){
 	return (UART0_MailBox.mailBox);
 }
 
-uint8 getUART4_mailBox(){
+uint8 getUART1_mailBox(){
 	/*Return the value of mailbox*/
-	return (UART4_MailBox.mailBox);
+	return (UART1_MailBox.mailBox);
 }
 
 uint8 getUART0_flag(){
@@ -59,9 +59,9 @@ uint8 getUART0_flag(){
 	return (UART0_MailBox.flag);
 }
 
-uint8 getUART4_flag(){
+uint8 getUART1_flag(){
 	/*Return the value of the flag of mailbox*/
-	return (UART4_MailBox.flag);
+	return (UART1_MailBox.flag);
 }
 
 void setUART0_mailBox(uint8 character){
@@ -69,9 +69,9 @@ void setUART0_mailBox(uint8 character){
 	UART0_MailBox.mailBox = character;
 }
 
-void setUART4_mailBox(uint8 character){
+void setUART1_mailBox(uint8 character){
 	/*Assigns the character into the mailbox*/
-	UART4_MailBox.mailBox = character;
+	UART1_MailBox.mailBox = character;
 }
 
 void setUART0_flag(uint8 status){
@@ -79,9 +79,9 @@ void setUART0_flag(uint8 status){
 	UART0_MailBox.flag = status;
 }
 
-void setUART4_flag(uint8 status){
+void setUART1_flag(uint8 status){
 	/*Changes the value of the flag of mailbox*/
-	UART4_MailBox.flag = status;
+	UART1_MailBox.flag = status;
 }
 
 
@@ -117,7 +117,7 @@ void UART0_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateTyp
 	SIM->SCGC5 = SIM_SCGC5_PORTB_MASK;
 	/**Configures the pin control register of pin16 in PortB as UART RX*/
 	PORTB->PCR[16] = PORT_PCR_MUX(3);
-	/**Configures the pin control register of pin16 in PortB as UART TX*/
+	/**Configures the pin control register of pin17 in PortB as UART TX*/
 	PORTB->PCR[17] = PORT_PCR_MUX(3);
 
 	/*Isolate the baudRate variable
@@ -208,7 +208,7 @@ void UART0_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateTyp
 	UART0->C2 |= (UART_C2_TE_MASK);
 }
 
-void UART4_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate){
+void UART1_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate){
 
 	/*Variable saves the original value of Baud Rate*/
 	float sBR;
@@ -232,10 +232,10 @@ void UART4_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateTyp
 	/**Enables the clock of PortC in order to configures TX and RX of UART peripheral*/
 	SIM->SCGC5 = SIM_SCGC5_PORTC_MASK;
 
-	/**Configures the pin control register of pin14 in PortC as UART RX*/
-	PORTC->PCR[14] = PORT_PCR_MUX(3);
-	/**Configures the pin control register of pin15 in PortC as UART TX*/
-	PORTC->PCR[15] = PORT_PCR_MUX(3);
+	/**Configures the pin control register of pin3 in PortC as UART RX*/
+	PORTC->PCR[3] = PORT_PCR_MUX(3);
+	/**Configures the pin control register of pin4 in PortC as UART TX*/
+	PORTC->PCR[4] = PORT_PCR_MUX(3);
 
 	/*Isolate the baudRate variable
 	 * 115200 = 21000000/((SBR+BRFD)*16)
@@ -298,31 +298,31 @@ void UART4_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateTyp
 	sbr_LOW = sbr_TEMP & UART_SBR_MASK_LOW;
 
 	/*Enable the clock of UART 1 */
-	SIM->SCGC1 |= SIM_SCGC1_UART4_MASK;
+	SIM->SCGC4 |= SIM_SCGC4_UART1_MASK;
 	/*Disable the Rx of UART*/
-	UART4->C2 &= ~(UART_C2_RE_MASK);
+	UART1->C2 &= ~(UART_C2_RE_MASK);
 	/*Disable the Tx of UART*/
-	UART4->C2 &= ~(UART_C2_TE_MASK);
+	UART1->C2 &= ~(UART_C2_TE_MASK);
 	/*Default settings*/
-	UART4->C1 = 0;
+	UART1->C1 = 0;
 
 
 	/*Clear the High part of SBR*/
-	UART4->BDH &= ~(UART_CLEAR_BDH);
+	UART1->BDH &= ~(UART_CLEAR_BDH);
 	/*Send the High part of SBR*/
-	UART4->BDH |= sbr_HIGH;
+	UART1->BDH |= sbr_HIGH;
 	/*Clear the Low part of SBR*/
-	UART4->BDL &= ~(UART_CLEAR_BDL);
+	UART1->BDL &= ~(UART_CLEAR_BDL);
 	/*Send the Low part of SBR*/
-	UART4->BDL |= sbr_LOW;
+	UART1->BDL |= sbr_LOW;
 
 
 	/*Send the Baud Rate Fine Adjust to register*/
-	UART4->C4 |= BRFA;
+	UART1->C4 |= BRFA;
 	/*Enable Rx of UART*/
-	UART4->C2 |= (UART_C2_RE_MASK);
+	UART1->C2 |= (UART_C2_RE_MASK);
 	/*Enable Tx of UART*/
-	UART4->C2 |= (UART_C2_TE_MASK);
+	UART1->C2 |= (UART_C2_TE_MASK);
 }
 
 void UART0_interruptEnable(UART_ChannelType uartChannel){
@@ -333,11 +333,11 @@ void UART0_interruptEnable(UART_ChannelType uartChannel){
 	}
 }
 
-void UART4_interruptEnable(UART_ChannelType uartChannel){
+void UART1_interruptEnable(UART_ChannelType uartChannel){
 	/*Verifies if the data is complete*/
-	if(!(UART4->S1 & UART_S1_RDRF_MASK)){
+	if(!(UART1->S1 & UART_S1_RDRF_MASK)){
 		/*Enable the interrupter of reception*/
-		UART4->C2 |= UART_C2_RIE_MASK;
+		UART1->C2 |= UART_C2_RIE_MASK;
 	}
 }
 
@@ -351,11 +351,11 @@ void UART_putChar (UART_ChannelType uartChannel, uint8 character){
 		UART0->D = character;
 		delay(S);
 		break;
-	case UART_4:
+	case UART_1:
 		/*Check if there isn't data transmission*/
-		while(!(UART4->S1 & UART_S1_TDRE_MASK));
+		while(!(UART1->S1 & UART_S1_TDRE_MASK));
 		/*Send character to Data Register*/
-		UART4->D = character;
+		UART1->D = character;
 		delay(S);
 		break;
 	default:
@@ -379,13 +379,13 @@ void UART_putString(UART_ChannelType uartChannel, sint8* string){
 			delay(S);
 		}
 		break;
-	case UART_4:
+	case UART_1:
 		/*Check if there isn't data transmission*/
-		while(!(UART4->S1 & UART_S1_TDRE_MASK));
+		while(!(UART1->S1 & UART_S1_TDRE_MASK));
 		/*Transmit the data until find the NULL value*/
 		while(string[counter] != '\0'){
 			/*Each character of string is send to Data Register*/
-			UART4->D = string[counter];
+			UART1->D = string[counter];
 			/*Move to next position in the array*/
 			counter++;
 			delay(S);
@@ -401,8 +401,8 @@ uint8 clearUART0_mailbox(){
 	return TRUE;
 }
 
-uint8 clearUART4_mailbox(){
-	UART4_MailBox.mailBox = 0;
+uint8 clearUART1_mailbox(){
+	UART1_MailBox.mailBox = 0;
 	return TRUE;
 }
 
@@ -489,7 +489,7 @@ FIFO_Type popFIFO_0(void){
 	return (fifo);
 }
 
-FIFO_Type popFIFO_4(void){
+FIFO_Type popFIFO_1(void){
 
 	uint32 counterSize = 0;
 	uint32 position = 0;
@@ -497,7 +497,7 @@ FIFO_Type popFIFO_4(void){
 	static uint32 counterChar;
 	FIFO_Type fifo;
 
-	while(FIFO_UART4.data[counterSize] != '\0'){
+	while(FIFO_UART1.data[counterSize] != '\0'){
 		counterSize++;
 	}
 
@@ -506,7 +506,7 @@ FIFO_Type popFIFO_4(void){
 	}
 
 	for(counterChar = counterSize; counterChar != 0; counterChar--){
-		fifo.data[position] = FIFO_UART4.data[position];
+		fifo.data[position] = FIFO_UART1.data[position];
 		position++;
 
 	}
@@ -537,25 +537,25 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 	return (FIFO_UART0.stateFIFO);
 }
 
-FIFO_FlagType pushFIFO_4(uint8 character){
+FIFO_FlagType pushFIFO_1(uint8 character){
 
 	static uint32 counterChar = 0;
 	const uint32 CR = 13;
 
 	if(character != CR){
-		FIFO_UART4.data[counterChar] = character;
+		FIFO_UART1.data[counterChar] = character;
 		counterChar++;
-		FIFO_UART4.stateFIFO = NORMAL;
+		FIFO_UART1.stateFIFO = NORMAL;
 	}else{
-		FIFO_UART4.data[counterChar] = character;
-		FIFO_UART4.size = counterChar;
+		FIFO_UART1.data[counterChar] = character;
+		FIFO_UART1.size = counterChar;
 		counterChar = 0;
-		FIFO_UART4.stateFIFO = NORMAL;
-		if(FIFO_UART4.size >= 50){
-			FIFO_UART4.stateFIFO = FULL;
+		FIFO_UART1.stateFIFO = NORMAL;
+		if(FIFO_UART1.size >= 50){
+			FIFO_UART1.stateFIFO = FULL;
 		}
 	}
-	return (FIFO_UART4.stateFIFO);
+	return (FIFO_UART1.stateFIFO);
 }
 
 FIFO_FlagType clearFIFO_0(void){
@@ -571,16 +571,16 @@ FIFO_FlagType clearFIFO_0(void){
 	return (FIFO_UART0.stateFIFO);
 }
 
-FIFO_FlagType clearFIFO_4(void){
+FIFO_FlagType clearFIFO_1(void){
 
 	uint32 counter;
 
 	for(counter = 0; counter < 50; counter++){
-		FIFO_UART4.data[counter] = '\0';
+		FIFO_UART1.data[counter] = '\0';
 	}
-	FIFO_UART4.size = 0;
-	FIFO_UART4.stateFIFO = EMPTY;
+	FIFO_UART1.size = 0;
+	FIFO_UART1.stateFIFO = EMPTY;
 
-	return (FIFO_UART4.stateFIFO);
+	return (FIFO_UART1.stateFIFO);
 }
 

@@ -83,7 +83,7 @@ void UART0_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateTyp
  	 \param[in]  baudRate sets the baud rate to transmit.
  	 \return void
  */
-void UART4_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate);
+void UART1_init(UART_ChannelType uartChannel, uint32 systemClk, UART_BaudRateType baudRate);
 
 /********************************************************************************************/
 /********************************************************************************************/
@@ -107,7 +107,7 @@ void UART0_interruptEnable(UART_ChannelType uartChannel);
  	 \param[in]  uartChannel indicates the UART channel.
  	 \return void
  */
-void UART4_interruptEnable(UART_ChannelType uartChannel);
+void UART1_interruptEnable(UART_ChannelType uartChannel);
 
 /********************************************************************************************/
 /********************************************************************************************/
@@ -134,24 +134,24 @@ void UART_putChar (UART_ChannelType uartChannel, uint8 character);
 void UART_putString(UART_ChannelType uartChannel, sint8* string);
 
 uint8 getUART0_mailBox();
-uint8 getUART4_mailBox();
+uint8 getUART1_mailBox();
 uint8 getUART0_flag();
-uint8 getUART4_flag();
+uint8 getUART1_flag();
 void setUART0_mailBox(uint8 character);
-void setUART4_mailBox(uint8 character);
+void setUART1_mailBox(uint8 character);
 void setUART0_flag(uint8 status);
-void setUART4_flag(uint8 status);
+void setUART1_flag(uint8 status);
 uint8 clearUART0_mailbox();
-uint8 clearUART4_mailbox();
+uint8 clearUART1_mailbox();
 uint32 expBASE10(uint8 limit);
 uint32 Convert_numberASCIItoDATA(uint8 *string);
 uint8 Convert_wordASCIItoDATA(uint8 word);
 FIFO_Type popFIFO_0(void);
-FIFO_Type popFIFO_4(void);
+FIFO_Type popFIFO_1(void);
 FIFO_FlagType pushFIFO_0(uint8 character);
-FIFO_FlagType pushFIFO_4(uint8 character);
+FIFO_FlagType pushFIFO_1(uint8 character);
 FIFO_FlagType clearFIFO_0(void);
-FIFO_FlagType clearFIFO_4(void);
+FIFO_FlagType clearFIFO_1(void);
 
 #endif /* UART_H_ */
 

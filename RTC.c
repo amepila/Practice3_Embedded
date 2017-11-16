@@ -161,13 +161,13 @@ void setRTC_month(uint8 month){
 
 }
 void setRTC_year(uint16 year){
-	if(year%100>99){
-		year=2017; //Defaults the year to the year of creation.
+	//Reset to current year on excesss
+	if(year>99){
+		year=17;
 	}
-	uint8 yeardec=year%100;
-	uint8 BCDyeardec=(yeardec%10);
-	BCDyeardec=BCDyeardec%10;
-	BCDyeardec|=(BCDyeardec/10)<<BIT4;
+
+	uint8 BCDyeardec=(year%10);
+	BCDyeardec|=(year/10)<<BIT4;
 	RTCdelay(1000);
 
 	I2C_start(); //Generate Start Signal
