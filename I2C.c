@@ -8,7 +8,11 @@
 #include "I2C.h"
 #include "GPIO.h"
 
-
+/*\brief funcion inicializar un modulo I2C de la k64 y tambien calcula el SCL respectivo
+ * \param[channel] modulo I2C que se quiere utilizar
+ *\param[systemClock] valor del reloj del sistema
+ *\param[baudRate] Unidades de señal por segundo
+ * */
 void I2C_init(I2C_ChannelType channel, uint32 systemClock, uint32 baudRate){
 
 	uint32 valueSCL;
@@ -53,7 +57,9 @@ void I2C_init(I2C_ChannelType channel, uint32 systemClock, uint32 baudRate){
 		break;
 	}
 }
-
+/*\brief funcion que verifica que el modulo actual no este ocupado y pueda continuar
+ *
+ * */
 uint8 I2C_busy(){
 	if(FALSE == (I2C0->S & I2C_S_BUSY_MASK)){
 		return TRUE;//I2C is idle
@@ -61,7 +67,9 @@ uint8 I2C_busy(){
 		return FALSE;//I2C is busy
 	}
 }
-
+/*\brief funcion que cambia el modulo de I2C entre maestro o esclavo
+ *
+ * */
 void I2C_MST_OrSLV_Mode(uint8 mode){
 	if(FALSE == mode){
 		I2C0->C1 &= ~(I2C_C1_MST_MASK);//Slave mode
@@ -69,7 +77,9 @@ void I2C_MST_OrSLV_Mode(uint8 mode){
 		I2C0->C1 |= I2C_C1_MST_MASK; //Master mode
 	}
 }
-
+/*\brief funcion que cambia el modulo de I2C entre transmisor y receptor
+ *
+ * */
 void I2C_TX_RX_Mode(uint8 mode){
 
 	if(FALSE == mode){
@@ -80,7 +90,9 @@ void I2C_TX_RX_Mode(uint8 mode){
 		I2C0->C1 |= I2C_C1_TX_MASK; //Master mode
 	}
 }
-
+/*\brief funcion que lanza una señal de not acknowledge para cortar la recepcion al estar leyendo datos
+ *
+ * */
 void I2C_NACK(void){
 
 	I2C0->C1 |= I2C_C1_TXAK_MASK;

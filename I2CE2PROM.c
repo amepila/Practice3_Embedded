@@ -11,6 +11,10 @@
 #define WRITECONTROL 0xA0
 #define READCONTROL 0xA1
 
+/*
+ * Escrituras estandar de I2C Start->WriteControl->Address->Data.
+ *
+ */
 void writeMemory(uint16 add,uint8 data){
 	uint8 Hadd=add>>BIT8;
 	uint8 Ladd=add;
@@ -52,6 +56,8 @@ void ACKpollingR(){
 	I2C_write_Byte(READCONTROL);
 	I2C_get_ACK();
 }
+//Lectura estandar I2C
+//Writecontrol->Direccion Alta->Direccion baja->Stop->Start(Repeated Start)->ReadControl->RX mode->DummyRead->Obtain Data
 
 uint8 readMemory(uint16 add){
 	uint8 dummy=0;
