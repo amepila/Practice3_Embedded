@@ -100,16 +100,18 @@ void setTimeLCD(Time_Type time){
 		setRTC_min((uint8)time.hour.minutes);
 		setRTC_hour((uint8)time.hour.hour);
 
-		time.modifyTime= FALSE;
 		Clock = time;
+		time.modifyTime= FALSE;
+
 	}
 	if(TRUE == time.modifyDate){
 		setRTC_day((uint8)time.date.day);
 		setRTC_month((uint8)time.date.month);
 		setRTC_year((uint8)time.date.year);
 
-		time.modifyDate = FALSE;
 		Clock = time;
+		time.modifyDate = FALSE;
+
 	}
 }
 
@@ -308,43 +310,35 @@ void printHourUART(Time_Type time){
 	}
 	date[5] = '0' + partUnSeconds;
 
-	if(FALSE == lock.flag1){
-		if((FALSE == lock.flag2) && (comparValues[0] != partDecHour)){
-			UART_putChar(UART_0, date[0]);
-			lock.flag2 = TRUE;
-		}
-		if((FALSE == lock.flag3) && (comparValues[1] != partUnHour)){
-			UART_putChar(UART_0, date[1]);
-			lock.flag3 = TRUE;
-		}
-		UART_putChar(UART_0, ASCII_DOUBLEPOINT);
-		if((FALSE == lock.flag4) && (comparValues[2] != partDecMinutes)){
-			UART_putChar(UART_0, date[2]);
-			lock.flag3 = TRUE;
-		}
-		if((FALSE == lock.flag5) && (comparValues[3] != partUnMinutes)){
-			UART_putChar(UART_0, date[3]);
-			lock.flag4 = TRUE;
-		}
-		UART_putChar(UART_0, ASCII_DOUBLEPOINT);
-		if((FALSE == lock.flag6) && (comparValues[4] != partDecSeconds)){
-			UART_putChar(UART_0, date[4]);
-			lock.flag5 = TRUE;
-		}
-		if((FALSE == lock.flag7) && (comparValues[5] != partUnSeconds)){
-			UART_putChar(UART_0, date[5]);
-			lock.flag6 = TRUE;
-		}
-		comparValues[0] = partDecHour;
-		comparValues[1] = partUnHour;
-		comparValues[2] = partDecMinutes;
-		comparValues[3] = partUnMinutes;
-		comparValues[4] = partDecSeconds;
-		comparValues[5] = partUnSeconds;
+	if('0' == date[0]){UART_putChar(UART_0, ASCII_0);}
+	else{UART_putChar(UART_0, date[0]);}
 
-		UART_putString(UART_0,"\033[10;34H");
-		lock.flag1 = TRUE;
-	}
+
+	if(0 == date[1]){UART_putChar(UART_0, ASCII_0);}
+	else{UART_putChar(UART_0, date[1]);}
+	UART_putChar(UART_0, ASCII_DOUBLEPOINT);
+
+	if(0 == date[2]){UART_putChar(UART_0, ASCII_0);}
+	else{UART_putChar(UART_0, date[2]);}
+
+	if(0 == date[3]){UART_putChar(UART_0, ASCII_0);}
+	else{UART_putChar(UART_0, date[3]);}
+	UART_putChar(UART_0, ASCII_DOUBLEPOINT);
+
+	if(0 == date[4]){UART_putChar(UART_0, ASCII_0);}
+	else{UART_putChar(UART_0, date[4]);}
+
+	if(0 == date[5]){UART_putChar(UART_0, ASCII_0);}
+	else{UART_putChar(UART_0, date[5]);}
+
+	comparValues[0] = partDecHour;
+	comparValues[1] = partUnHour;
+	comparValues[2] = partDecMinutes;
+	comparValues[3] = partUnMinutes;
+	comparValues[4] = partDecSeconds;
+	comparValues[5] = partUnSeconds;
+
+	UART_putString(UART_0,"\033[10;36H");
 }
 
 void printDateUART(Time_Type time){
@@ -557,7 +551,7 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	if(FALSE == lockSetHour){
 		time = getTime();
 		lockSetHour = TRUE;
-	}
+	}5
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -1057,7 +1051,7 @@ States_MenuType stateMenu(Time_Type realTime){
 		Clock = realTime;
 		lockRTC = TRUE;
 	}
-	printTimeLCD(realTime);
+	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){flagUART0 = menu_Main();}
 
@@ -1089,6 +1083,8 @@ States_MenuType stateMenu(Time_Type realTime){
 		/**clear the reception flag*/
 		setUART0_flag(FALSE);
 	}
+	clearUART0_mailbox();
+
 	if((state != MENU) && (EMPTY == fifoMenu.stateFIFO)){
 		clearUART0_mailbox();
 		flagUART0 = FALSE;

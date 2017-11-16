@@ -147,7 +147,7 @@ int main(void){
 	/**Enables the UART interrupts*/
 	UART0_interruptEnable(UART_0);
 	UART1_interruptEnable(UART_1);
-	menu_Main1();
+	//menu_Main1();
 
 	/**Enable all the interrupts **/
 	EnableInterrupts;

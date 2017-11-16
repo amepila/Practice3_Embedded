@@ -525,6 +525,7 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 		FIFO_UART0.data[counterChar] = character;
 		counterChar++;
 		FIFO_UART0.stateFIFO = NORMAL;
+		FIFO_UART0.size = 0;
 	}else{
 		FIFO_UART0.data[counterChar] = character;
 		FIFO_UART0.size = counterChar;
@@ -535,6 +536,7 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 		}
 	}
 	return (FIFO_UART0.stateFIFO);
+
 }
 
 FIFO_FlagType pushFIFO_1(uint8 character){
