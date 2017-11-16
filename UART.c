@@ -397,17 +397,19 @@ void UART_putString(UART_ChannelType uartChannel, sint8* string){
 }
 
 uint8 clearUART0_mailbox(){
+	/*Clean the MailBox of UART0*/
 	UART0_MailBox.mailBox = 0;
 	return TRUE;
 }
 
 uint8 clearUART1_mailbox(){
+	/*Clean the mailbox of UART1*/
 	UART1_MailBox.mailBox = 0;
 	return TRUE;
 }
 
 uint32 expBASE10(uint8 limit){
-
+	/*Use the exponent base 10 to different digits*/
 	static uint32 value;
 
 	if(limit == 0){	value = 1;}
@@ -429,27 +431,29 @@ uint32 Convert_numberASCIItoDATA(uint8 *string){
 	uint32 tmpData2 = 0;
 	uint32 expValue;
 
+	/*First loop to manage find the size*/
 	while(string[counter1] != CR){
 		counter1++;
 	}
 
+	/*Second loop to begin in last position of array*/
 	for(counter2 = counter1; counter2 != 0; counter2--){
-
+		/*Elevate the number by 10 depending of its position*/
 		expValue = expBASE10(counter3);
 
+		/*Converts the ASCII to INT*/
 		if(counter3 == 0){
 			tmpData2 = string[counter2 - 1];
 			tmpData2 -= adjustASCII;
 			tmpData1 += tmpData2;
 		}
-
+		/*Save the value and sums*/
 		if(counter3 > 0){
 			tmpData2 = string[counter2 - 1];
 			tmpData2 -= adjustASCII;
 			tmpData2 *= expValue;
 			tmpData1 += tmpData2;
 		}
-
 		counter3++;
 	}
 
@@ -470,18 +474,19 @@ FIFO_Type popFIFO_0(void){
 	static uint32 counterChar;
 	FIFO_Type fifo;
 
+	/*Loop to find the size*/
 	while(FIFO_UART0.data[counterSize] != '\0'){
 		counterSize++;
 	}
 
+	/*Second loop to clear the FIFO*/
 	for(counterClear = 0; counterClear < 50; counterClear++){
 		fifo.data[counterClear] = '\0';
 	}
-
+	/*Third loop to save the value into FIFO*/
 	for(counterChar = counterSize; counterChar != 0; counterChar--){
 		fifo.data[position] = FIFO_UART0.data[position];
 		position++;
-
 	}
 
 	fifo.size = counterSize;
@@ -497,14 +502,15 @@ FIFO_Type popFIFO_1(void){
 	static uint32 counterChar;
 	FIFO_Type fifo;
 
+	/*Loop to find the size*/
 	while(FIFO_UART1.data[counterSize] != '\0'){
 		counterSize++;
 	}
-
+	/*Second loop to clear the FIFO*/
 	for(counterClear = 0; counterClear < 50; counterClear++){
 		fifo.data[counterClear] = '\0';
 	}
-
+	/*Third loop to save the data into FIFO*/
 	for(counterChar = counterSize; counterChar != 0; counterChar--){
 		fifo.data[position] = FIFO_UART1.data[position];
 		position++;
@@ -521,6 +527,7 @@ FIFO_FlagType pushFIFO_0(uint8 character){
 	static uint32 counterChar = 0;
 	const uint32 CR = 13;
 
+	/*Get the info into FIFO until find the CR value*/
 	if(character != CR){
 		FIFO_UART0.data[counterChar] = character;
 		counterChar++;
@@ -544,6 +551,7 @@ FIFO_FlagType pushFIFO_1(uint8 character){
 	static uint32 counterChar = 0;
 	const uint32 CR = 13;
 
+	/*Get the info into FIFO until find the CR value*/
 	if(character != CR){
 		FIFO_UART1.data[counterChar] = character;
 		counterChar++;
@@ -564,6 +572,7 @@ FIFO_FlagType clearFIFO_0(void){
 
 	uint32 counter;
 
+	/*Clear the FIFO*/
 	for(counter = 0; counter < 50; counter++){
 		FIFO_UART0.data[counter] = '\0';
 	}
@@ -577,6 +586,7 @@ FIFO_FlagType clearFIFO_1(void){
 
 	uint32 counter;
 
+	/*Clear the FIFO*/
 	for(counter = 0; counter < 50; counter++){
 		FIFO_UART1.data[counter] = '\0';
 	}

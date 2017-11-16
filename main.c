@@ -112,21 +112,24 @@ int main(void){
 	Buttons_init(Buttons_Config);
 	I2C_init(I2C_0, 30000000, 100000);
 
-	/**General variables**/
+	/**Set of initial Clock**/
 	static Time_Type realTimeClock;
 	realTimeClock.hour.format = FORMAT_24H;
 	realTimeClock.hour.period = NON_PERIOD;
 	realTimeClock.modifyDate = TRUE;
 	realTimeClock.modifyTime = TRUE;
 
-	realTimeClock.hour.hour = 3;
-	realTimeClock.hour.minutes = 10;
+	/**Set the initial hour**/
+	realTimeClock.hour.hour = 6;
+	realTimeClock.hour.minutes = 0;
 	realTimeClock.hour.seconds = 0;
 
-	realTimeClock.date.day = 9;
+	/**Set the initial date**/
+	realTimeClock.date.day = 16;
 	realTimeClock.date.month = 11;
 	realTimeClock.date.year = 2017;
 
+	/**Send the struct to RTC**/
 	setTimeLCD(realTimeClock);
 
 	/***Interruptions Configurations***/
@@ -147,7 +150,6 @@ int main(void){
 	/**Enables the UART interrupts*/
 	UART0_interruptEnable(UART_0);
 	UART1_interruptEnable(UART_1);
-	//menu_Main1();
 
 	/**Enable all the interrupts **/
 	EnableInterrupts;

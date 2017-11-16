@@ -35,6 +35,7 @@ const uint8 CR = 13;
 const uint32 Medium_Hour = (0x12U);
 static Time_Type Clock;
 static uint32 FlagButton = FALSE;
+const uint8 MessageError[] = "ERROR!";
 
 
 /******************States********************************************/
@@ -280,8 +281,6 @@ void printHourUART(Time_Type time){
 	uint32 partDecSeconds;
 	uint32 partUnSeconds;
 	static uint8 date[6];
-	static uint32 comparValues[6];
-	static LockFlags_Type lock;
 
 	partDecHour = time.hour.hour / 10;
 	partUnHour = time.hour.hour % 10;
@@ -330,13 +329,6 @@ void printHourUART(Time_Type time){
 
 	if(0 == date[5]){UART_putChar(UART_0, ASCII_0);}
 	else{UART_putChar(UART_0, date[5]);}
-
-	comparValues[0] = partDecHour;
-	comparValues[1] = partUnHour;
-	comparValues[2] = partDecMinutes;
-	comparValues[3] = partUnMinutes;
-	comparValues[4] = partDecSeconds;
-	comparValues[5] = partUnSeconds;
 
 	UART_putString(UART_0,"\033[10;36H");
 }
@@ -551,7 +543,7 @@ StateSetHour_Type stateSetTime(StateSetHour_Type data){
 	if(FALSE == lockSetHour){
 		time = getTime();
 		lockSetHour = TRUE;
-	}5
+	}
 
 	if(getUART0_mailBox() != CR){
 		/**Sends to the PCA the received data in the mailbox*/
@@ -943,7 +935,6 @@ StateReadHour_Type stateReadTime(StateReadHour_Type data){
 
 	static StateReadHour_Type dataReadTime1;
 	static uint32 flagLock = FALSE;
-	Time_Type realTime;
 
 	if(FALSE == flagLock){
 		printHourUART(getTime());
@@ -1043,9 +1034,12 @@ States_MenuType stateMenu(Time_Type realTime){
 
 	States_MenuType state = MENU;
 	static uint32 flagUART0 = FALSE;
-	static uint32 flagUART4 = FALSE;
 	static uint32 lockRTC = FALSE;
 	FIFO_Type fifoMenu;
+
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
 
 	if(FALSE == lockRTC){
 		Clock = realTime;
@@ -1102,6 +1096,10 @@ States_MenuType stateRead(Time_Type realTime){
 	StateReadI2C_Type(*readFunctions)(StateReadI2C_Type);
 	stateRead.stateMain = READ;
 
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
+
 	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
@@ -1145,6 +1143,10 @@ States_MenuType stateWrite(Time_Type realTime){
 	StateWriteI2C_Type(*writeFunctions)(StateWriteI2C_Type);
 	stateWrite.stateMain = WRITE;
 	uint32 counterChar;
+
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
 
 	printTimeLCD(Clock);
 
@@ -1192,6 +1194,10 @@ States_MenuType stateSetHour(Time_Type realTime){
 	StateSetHour_Type(*setHourFunctions)(StateSetHour_Type);
 	state_SetHour.stateMain = SET_HOUR;
 
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
+
 	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
@@ -1236,6 +1242,10 @@ States_MenuType stateSetDate(Time_Type realTime){
 	StateSetDate_Type(*setDateFunctions)(StateSetDate_Type);
 	state_SetDate.stateMain = SET_DATE;
 
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
+
 	printTimeLCD(Clock);
 
 	if(FALSE == flagUART0){
@@ -1277,6 +1287,10 @@ States_MenuType stateFormat(Time_Type realTime){
 	static StateFormat_Type dataMemory;
 	StateFormat_Type(*formatFunctions)(StateFormat_Type);
 	stateFormat.stateMain = FORMAT;
+
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
 
 	printTimeLCD(Clock);
 
@@ -1322,6 +1336,10 @@ States_MenuType stateReadHour(Time_Type realTime){
 	StateReadHour_Type(*readHourFunctions)(StateReadHour_Type);
 	stateReadHour.stateMain = READ_HOUR;
 
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
+
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadHour(phase);
 	}
@@ -1359,6 +1377,10 @@ States_MenuType stateReadDate(Time_Type realTime){
 	StateReadDate_Type(*readDateFunctions)(StateReadDate_Type);
 	stateReadDate.stateMain = READ_DATE;
 
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
+
 	if(FALSE == flagUART0){
 		flagUART0 = menu_ReadDate(phase);
 	}
@@ -1391,6 +1413,10 @@ States_MenuType stateTerminal2(Time_Type realTime){
 
 	States_MenuType state = TERMINAL2;
 
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
+
 	printTimeLCD(Clock);
 
 	if(getUART0_flag()){
@@ -1412,6 +1438,10 @@ States_MenuType stateEco(Time_Type realTime){
 	static StateEco_Type stateEco;
 	StateEco_Type(*ecoFunctions)(StateEco_Type);
 	stateEco.stateMain = ECO;
+
+	if(MEMORYERROR == (getRTCError())){
+		LCDNokia_sendString((uint8*)MessageError);
+	}
 
 	if(FALSE == flagUART0){
 		flagUART0 = menu_EcoLCD(phase);
